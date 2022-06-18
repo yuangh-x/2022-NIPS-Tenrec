@@ -17,15 +17,32 @@ The Dataset can be downloaded from:
 
 **Benchmark**
 **CTR:**
+
 AFM
 ```
-python main.py --task_name=ctr --model_name=afm --dataset_path=data/ctr_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
+python main.py --task_name=ctr --model_name=afm --dataset_path=data/ctr_data_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
 ```
 DeepFM
 ```
-python main.py --task_name=ctr --model_name=deepfm --dataset_path=data/ctr_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
+python main.py --task_name=ctr --model_name=deepfm --dataset_path=data/ctr_data_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
+```
+xDeepFM
+```
+python main.py --task_name=ctr --model_name=xdeepfm --dataset_path=data/ctr_data_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
+```
+NFM
+```
+python main.py --task_name=ctr --model_name=nfm --dataset_path=data/ctr_data_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
+```
+Wide & Deep
+```
+python main.py --task_name=ctr --model_name=wdl --dataset_path=data/ctr_data_1M.csv --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
 ```
 
+**Session-based Recommendation**
+
+NextItNet
+python main.py --task_name=sequence --model_name=nextitnet --dataset_path=data/sbr_data_1M.csv --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 
 
 **License:**
 
