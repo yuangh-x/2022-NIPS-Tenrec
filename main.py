@@ -236,27 +236,16 @@ def set_seed(seed):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--seed', type=int, default=200)
-    parser.add_argument('--task_name', default='life_long')
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--task_name', default='')
     parser.add_argument('--task_num', type=int, default=4)
-    parser.add_argument('--dataset_path',
-                           default='/workspace/user_code/BenchMark1/ft_local/video_qq_large/video_data_large_0.csv')
-                        # default = '/workspace/user_code/BenchMark1/ft_local/dataset/video_qq_1_50w.csv')
-    #                      default='/workspace/user_code/BenchMark1/ft_local/video_qb/video_qb_data_0.csv')
-    #                      default='/workspace/user_code/BenchMark1/ft_local/new_handled_qb_video.csv')
-    #                     default='/workspace/user_code/BenchMark1/ft_local/qb_video_cold.csv')
-    #                     default='/data/home/ft_local/handled_qq_video1M_hist.csv')
-    #                     default = '/data/home/ft_local/handled_qq_video_pos_filter_high.csv')
-    #                    default='/workspace/user_code/BenchMark1/ft_local/new_handled_qb_video_hist.csv')
-
-    #                      default='/workspace/user_code/BenchMark1/ft_local/task_small_1_new.csv')
-    #                      default='/workspace/user_code/BenchMark1/ft_local/handled_qb_video_map_filter_low.csv')
-
+    parser.add_argument('--dataset_path', type=str, default='')
+    parser.add_argument('--pretrain_path', type=str, default='')
     parser.add_argument('--train_batch_size', type=int, default=32)
-    parser.add_argument('--val_batch_size', type=int, default=64)
-    parser.add_argument('--test_batch_size', type=int, default=64)
+    parser.add_argument('--val_batch_size', type=int, default=32)
+    parser.add_argument('--test_batch_size', type=int, default=32)
     parser.add_argument('--sample', type=str, default='random')
-    parser.add_argument('--negsample_savefolder', type=str, default='/data/home/data/')
+    parser.add_argument('--negsample_savefolder', type=str, default='/data/neg_data/')
     parser.add_argument('--negsample_size', type=int, default=1000)
     parser.add_argument('--max_len', type=int, default=30)
     parser.add_argument('--item_min', type=int, default=10)
@@ -265,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument('--task', type=int, default=-1)
     parser.add_argument('--valid_rate', type=int, default=2)
 
-    parser.add_argument('--model_name', default='bert4life')
+    parser.add_argument('--model_name', default='')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--re_epochs', type=int, default=20)
 
@@ -288,7 +277,7 @@ if __name__ == "__main__":
     parser.add_argument('--best_metric', type=str, default='NDCG@10', help='Metric for determining the best model')
 
     #model param
-    parser.add_argument('--hidden_size', type=int, default=128, help='Size of hidden vectors (d_model)')
+    parser.add_argument('--hidden_size', type=int, default=128, help='Size of hidden vectors (model)')
     parser.add_argument('--block_num', type=int, default=16, help='Number of transformer layers')
     parser.add_argument('--num_groups', type=int, default=4, help='Number of transformer groups')
     parser.add_argument('--num_heads', type=int, default=4, help='Number of heads for multi-attention')
@@ -298,13 +287,11 @@ if __name__ == "__main__":
                         help='Probability for masking items in the training sequence')
 
     #Nextitnet
-    parser.add_argument('--embedding_size', type=int, default=128, help='embedding_size for NIN')
+    parser.add_argument('--embedding_size', type=int, default=128, help='embedding_size for model')
     parser.add_argument('--dilations', type=int, default=[1, 4], help='Number of transformer layers')
     parser.add_argument('--kernel_size', type=int, default=3, help='Number of heads for multi-attention')
     parser.add_argument('--is_mp', type=bool, default=False, help='Number of heads for multi-attention')
     parser.add_argument('--pad_token', type=int, default=0)
-    # parser.add_argument('--stack_type', type=str, default='adj')
-    # parser.add_argument('--cp_type', type=str, default='adj_block')
     parser.add_argument('--temp', type=int, default=7)
 
     #SASRec
@@ -326,10 +313,10 @@ if __name__ == "__main__":
     parser.add_argument('--prun_rate', type=float, default=0)
     parser.add_argument('--ll_max_itemnum', type=int, default=0)
     parser.add_argument('--lifelong_eval', type=bool, default=True)
-    parser.add_argument('--task1_out', type=int, default=948373)
-    parser.add_argument('--task2_out', type=int, default=26872)
+    parser.add_argument('--task1_out', type=int, default=0)
+    parser.add_argument('--task2_out', type=int, default=0)
     parser.add_argument('--task3_out', type=int, default=0)
-    parser.add_argument('--task4_out', type=int, default=416)
+    parser.add_argument('--task4_out', type=int, default=0)
     parser.add_argument('--eval', type=bool, default=True)
 
     args = parser.parse_args()
@@ -393,9 +380,7 @@ if __name__ == "__main__":
             writer.close()
         else:
             print("transfer")
-            best_weight = torch.load(os.path.join(args.save_path,
-                                                  # 'sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth'))
-                                                  'sequence_bert4rec_seed100_is_pretrain_2_best_model_lr0.0002_wd0.0_block8_hd64_emb64.pth'))
+            best_weight = torch.load(args.pretrain_path)
             if 'peter' in args.model_name:
                 args.is_mp = True
                 best_weight.pop('item_embedding.weight')
@@ -444,7 +429,7 @@ if __name__ == "__main__":
             writer.close()
         else:
             print('++++++++++transfer++++++++++')
-            best_weight = torch.load(os.path.join(args.pretrain_model_path))
+            best_weight = torch.load(args.pretrain_path)
             last_model = get_model(args)
             last_model.load_state_dict(best_weight)
             last_block_num = args.block_num
@@ -486,16 +471,11 @@ if __name__ == "__main__":
             args.block_num = tmp_block
             args.hidden_size = tmp_hd
 
-            best_weight = torch.load(os.path.join('checkpoint',
-                                                  # 'sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth'))
-                                                    'sequence_bert4rec_seed100_is_pretrain_2_best_model_lr0.0002_wd0.0_block8_hd64_emb64.pth'))
+            best_weight = torch.load(args.pretrain_path)
             teacher_model.load_state_dict(best_weight)
             KDTrain(args.epochs, teacher_model, student_model, train_loader, val_loader, writer, args)
         else:
             model = get_model(args)
-            path = '/workspace/user_code/BenchMark1/checkpoint/model_compr_bert4cp_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth'
-            weight = torch.load(path)
-            model.load_state_dict(weight)
             SeqTrain(args.epochs, model, train_loader, val_loader, writer, args)  # , user_noclick
         writer.close()
 
@@ -528,10 +508,7 @@ if __name__ == "__main__":
         train_loader, val_loader, test_loader = get_data(args)
         if args.is_pretrain == 0:
             print('transfer')
-            best_weight = torch.load(os.path.join('checkpoint',
-                                                  'sequence_bert4rec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block16_hd128_emb128.pth'))
-                                                  # 'sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth'))
-                                                    # 'sequence_bert4rec_seed100_is_pretrain_2_best_model_lr0.0002_wd0.0_block8_hd64_emb64.pth'))
+            best_weight = torch.load(args.pretrain_path)
 
             if 'peter' in args.model_name:
                 args.is_mp = True
@@ -557,8 +534,8 @@ if __name__ == "__main__":
             if args.is_pretrain == 0:
                 args.is_mp = True
             model = get_model(args)
-            best_weight = torch.load(os.path.join(#args.save_path,
-                                                '/data/home/{}_{}_seed{}_profile-{}_pretrain{}_best_model.pth'.format(args.task_name,
+            best_weight = torch.load(os.path.join(args.save_path,
+                                                '{}_{}_seed{}_profile-{}_pretrain{}_best_model.pth'.format(args.task_name,
                                                                                      args.model_name, args.seed, args.user_profile, args.is_pretrain)))
             model.load_state_dict(best_weight)
             model = model.to(args.device)
@@ -571,11 +548,11 @@ if __name__ == "__main__":
         retrain_task1 = True
         for i in range(0, args.task_num):
             args.task = i
-            args.source_path = '/workspace/user_code/BenchMark1/ft_local/task_small_0_new.csv'
+            args.source_path = '/data/task_small_0_new.csv'
             if i > 0:
-                args.target_path = '/workspace/user_code/BenchMark1/ft_local/task_small_{}_new.csv'.format(i)
+                args.target_path = '/data/task_small_{}_new.csv'.format(i)
             else:
-                args.dataset_path = '/workspace/user_code/BenchMark1/ft_local/task_small_0_new.csv'
+                args.dataset_path = '/data/task_small_0_new.csv'
             train_loader1, val_loader1, test_loader1, source_num, target_num = get_data(args)
             args.task1_out = source_num
             if i == 1:
@@ -688,10 +665,7 @@ if __name__ == "__main__":
             writer.close()
         else:
             print("transfer")
-            best_weight = torch.load(os.path.join('checkpoint',
-                                                  'sequence_bert4rec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block16_hd128_emb128.pth'))
-                                                  # 'sequence_bert4rec_seed100_is_pretrain_2_best_model_lr0.0002_wd0.0_block8_hd64_emb64.pth'))
-                                                  #  'sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth'))
+            best_weight = torch.load(args.pretrain_path)
             if 'peter' in args.model_name:
                 args.is_mp = True
                 best_weight.pop('final_layer.weight')
