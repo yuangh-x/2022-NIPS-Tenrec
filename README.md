@@ -11,9 +11,10 @@ QK-article.csv: Users interactions with articles in QK.
 
 QB-artilce.csv: Usesr interactions with articles in QB.
 
-**Download the dataset:**
+<!-- **Download the dataset:**
 
 The Dataset can be downloaded from:
+https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing -->
 
 **Benchmark**
 
@@ -85,7 +86,7 @@ python main.py --task_name=mtl --seed=100 --model_name=esmm --dataset_path='data
 
 **Transfer Learning**
 
-Plese run the command of Session-based Recommendation Task
+Plese run the command of Session-based Recommendation Task firstly
 
 NextItNet with Pretrain
 ```
@@ -98,6 +99,8 @@ python main.py --task_name=transfer_learning --seed=100 --model_name=sas4transfe
 ```
 
 **User Profile Prediction**
+
+Plese run the command of Session-based Recommendation Task firstly
 
 DNN
 ```
@@ -135,6 +138,8 @@ Peterrec without Pretrain
 ```
 python main.py --task_name=cold_start --seed=10 --model_name=peter4coldstart --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==2
 ```
+
+Plese run the command of Session-based Recommendation Task firstly
 
 BERT4Rec with Pretrain
 ```
