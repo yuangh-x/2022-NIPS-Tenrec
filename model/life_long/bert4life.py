@@ -1,12 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-
 import math
-
-# from models.bert_modules.embedding import BERTEmbedding
-# from models.bert_modules.transformer import TransformerBlock
-# from utils import fix_random_seed_as
 
 class Attention(nn.Module):
     """
@@ -173,9 +168,6 @@ class BERT(nn.Module):
     def __init__(self, args):
         super().__init__()
 
-        # fix_random_seed_as(args.model_init_seed)
-        # self.init_weights()
-
         max_len = args.max_len
         n_layers = args.block_num
         heads = args.num_heads
@@ -209,7 +201,6 @@ class BERT4Life(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.bert = BERT(args)
-        # self.out = nn.Linear(self.bert.hidden, args.num_items + 1)
         self.times = args.task
         self.output_dim1 = args.task1_out
         self.output_dim2 = args.task2_out
@@ -219,11 +210,8 @@ class BERT4Life(nn.Module):
         self.out2 = nn.Linear(self.bert.hidden, self.output_dim2 + 1)
         self.out3 = nn.Linear(self.bert.hidden, self.output_dim3 + 1)
         self.out4 = nn.Linear(self.bert.hidden, self.output_dim4 + 1)
-    # @classmethod
-    # def code(cls):
-    #     return 'bert'
 
-    def forward(self, x):#, pos, neg
+    def forward(self, x):
         x = self.bert(x)
         if self.times == 0:
             return self.out1(x)
@@ -233,18 +221,3 @@ class BERT4Life(nn.Module):
             return self.out3(x)
         else:
             return self.out4(x)
-        # pos_emb = self.bert.embedding.token(pos)
-        # neg_emb = self.bert.embedding.token(neg)
-        # pos_logits = (x * pos_emb).mean(dim=-1)
-        # neg_logits = (x * neg_emb).mean(dim=-1)
-        # return pos_logits, neg_logits
-
-    # def predict(self, log_seqs):  # for inference, item
-    #     log_feats = self.bert(log_seqs)  # user_ids hasn't been used yet
-    #
-    #     item_embs = self.bert.embedding.token.weight#(item)  # (U, I, C)
-    #     logits = log_feats.matmul(item_embs.transpose(0, 1))  # .squeeze(-1)
-    #     logits = logits.mean(1)
-    #     # preds = self.pos_sigmoid(logits) # rank same item list for different users
-    #
-    #     return logits  # scores# preds # (U, I)

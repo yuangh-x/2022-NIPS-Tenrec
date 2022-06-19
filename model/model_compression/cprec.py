@@ -19,7 +19,7 @@ class CpRec(nn.Module):
     """
 
     def __init__(self, args):
-        super(CpRec1, self).__init__()
+        super(CpRec, self).__init__()
 
         # load parameters info
         self.embedding_size = args.embedding_size
