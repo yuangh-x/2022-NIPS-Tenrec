@@ -22,19 +22,19 @@ from model.mtl.esmm import ESMM
 from model.mtl.mmoe import MMOE
 from model.model_accelerate.stackrec import StackRec
 from model.model_compression.cprec import CpRec
-from model.model_compression.cprec1 import CpRec1
 from model.inference_acceleration.skiprec import SkipRec, PolicyNetGumbel
-from model.inference_acceleration.bert4infacc import BERT4infaccModel, Bert_PolicyNetGumbel
-from model.transfer_learning.bert4transfer import BERT_TransferModel
+from model.inference_acceleration.sas4infacc import SAS4infaccModel, SAS_PolicyNetGumbel
+from model.transfer_learning.sas4transfer import SAS_TransferModel
 from model.user_profile_representation.bert4profile import BERT_ProfileModel
 from model.user_profile_representation.peter4profile import Peter_ProfileModel
 from model.user_profile_representation.dnn4profile import DNNModel
 from model.life_long.conure import Conure
 from model.life_long.bert4life import BERT4Life
+from model.life_long.sas4life import SAS4Life
 from model.coldstart.bert4coldstart import BERT_ColdstartModel
 from model.coldstart.peter4coldstart import Peter4Coldstart
-from model.model_accelerate.bert4acc import BERT4accModel
-from model.model_compression.bert4cp import BERT4cpModel
+from model.model_accelerate.sas4acc import SAS4accModel
+from model.model_compression.sas4cp import SAS4cpModel
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
@@ -195,13 +195,13 @@ def get_model(args, linear_feature_columns=None, dnn_feature_columns=None):
     elif name == 'stackrec':
         return StackRec(args)
     elif name == 'cprec':
-        return CpRec1(args)
+        return CpRec(args)
     elif name == 'skiprec':
         return SkipRec(args), PolicyNetGumbel(args)
-    elif name == 'bert4infacc':
-        return BERT4infaccModel(args), Bert_PolicyNetGumbel(args)
-    elif name == 'bert4transfer':
-        return BERT_TransferModel(args)
+    elif name == 'sas4infacc':
+        return SAS4infaccModel(args), SAS_PolicyNetGumbel(args)
+    elif name == 'sas4transfer':
+        return SAS_TransferModel(args)
     elif name == 'bert4profile':
         return BERT_ProfileModel(args)
     elif name == 'peter4profile':
@@ -210,16 +210,18 @@ def get_model(args, linear_feature_columns=None, dnn_feature_columns=None):
         return Conure(args)
     elif name == 'bert4life':
         return BERT4Life(args)
+    elif name == 'sas4life':
+        return SAS4Life
     elif name == 'bert4coldstart':
         return BERT_ColdstartModel(args)
     elif name == 'peter4coldstart':
         return Peter4Coldstart(args)
     elif name == 'dnn4profile':
         return DNNModel(args)
-    elif name == 'bert4acc':
-        return  BERT4accModel(args)
-    elif name == 'bert4cp':
-        return BERT4cpModel(args)
+    elif name == 'sas4acc':
+        return SAS4accModel(args)
+    elif name == 'sas4cp':
+        return SAS4cpModel(args)
 
     else:
         raise ValueError('unknown model name: ' + name)
@@ -252,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_path', type=str, default='checkpoint')
     # parser.add_argument('--save_path', type=str, default='/data/home')
     parser.add_argument('--task', type=int, default=-1)
-    parser.add_argument('--valid_rate', type=int, default=2)
+    parser.add_argument('--valid_rate', type=int, default=100)
 
     parser.add_argument('--model_name', default='')
     parser.add_argument('--epochs', type=int, default=20)
@@ -260,7 +262,6 @@ if __name__ == "__main__":
 
     parser.add_argument('--lr', type=float, default=0.0001)
 
-    parser.add_argument('--batch_size', type=int, default=256)
     parser.add_argument('--device', default='cuda')  # cuda:0
     parser.add_argument('--is_parallel', type=bool, default=False)
     parser.add_argument('--local_rank', type=int)
@@ -303,6 +304,9 @@ if __name__ == "__main__":
     parser.add_argument('--kd', type=bool, default=False, help='True: Knowledge distilling, False: Cprec')
     parser.add_argument('--alpha', default=0.4, type=float)
 
+    #model_acc
+    parser.add_argument('--add_num_times', type=int, default=2)
+
     #transfer learning
     parser.add_argument('--is_pretrain', type=int, default=1, help='0: mean transfer, 1: mean pretrain, 2:mean train full model without transfer')
 
@@ -333,10 +337,10 @@ if __name__ == "__main__":
         model = get_model(args, lf_columns, df_columns)
         model.compile(args, "adam", "binary_crossentropy",
                       metrics=["auc", "acc"])
-        history, best_model = model.fit(train_model_input, train['click'].values, batch_size=4096, epochs=20, verbose=2,
+        history, best_model = model.fit(train_model_input, train['click'].values, batch_size=args.train_batch_size, epochs=args.epochs, verbose=2,
                             validation_split=0.1111)
 
-        pred_ans = best_model.predict(test_model_input, 1024)
+        pred_ans = best_model.predict(test_model_input, args.test_batch_size)
         print("test LogLoss", round(log_loss(test['click'].values, pred_ans), 4))
         print("test AUC", round(roc_auc_score(test['click'].values, pred_ans), 4))
     elif args.task_name == 'sequence':
@@ -423,7 +427,7 @@ if __name__ == "__main__":
             SeqTrain(args.epochs, model, train_loader, val_loader, writer, args)
             writer.close()
         elif args.is_pretrain == 2:
-            args.block_num = args.block_num * 2
+            args.block_num = args.block_num * args.add_num_times
             model = get_model(args)
             SeqTrain(args.epochs, model, train_loader, val_loader, writer, args)
             writer.close()
@@ -433,7 +437,7 @@ if __name__ == "__main__":
             last_model = get_model(args)
             last_model.load_state_dict(best_weight)
             last_block_num = args.block_num
-            args.block_num = args.block_num * 2
+            args.block_num = args.block_num * args.add_num_times
             print('block_num', args.block_num)
             model = get_model(args)
             model = new_adj_stack(model, last_model, last_block_num, args)
@@ -548,11 +552,11 @@ if __name__ == "__main__":
         retrain_task1 = True
         for i in range(0, args.task_num):
             args.task = i
-            args.source_path = '/data/task_small_0_new.csv'
+            args.source_path = '/data/task_0_new.csv'
             if i > 0:
-                args.target_path = '/data/task_small_{}_new.csv'.format(i)
+                args.target_path = '/data/task_{}_new.csv'.format(i)
             else:
-                args.dataset_path = '/data/task_small_0_new.csv'
+                args.dataset_path = '/data/task_0_new.csv'
             train_loader1, val_loader1, test_loader1, source_num, target_num = get_data(args)
             args.task1_out = source_num
             if i == 1:
@@ -650,8 +654,8 @@ if __name__ == "__main__":
 
     elif args.task_name == 'cold_start':
         print('=============cold_start=============')
-        args.source_path = 'ft_local/video_qq_large/video_data_large_0.csv'
-        args.target_path = 'ft_local/qq_tuwen_overlap_cold.csv'
+        args.source_path = '/data/sbr_data_1M.csv'
+        args.target_path = '/data/cold_data.csv'
         train_loader, val_loader, test_loader = get_data(args) #, user_noclick
         if args.is_pretrain == 1:
             print("pretrain")

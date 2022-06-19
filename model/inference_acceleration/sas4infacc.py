@@ -1,12 +1,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-
+import time
 import math
-from model.model_compression.adaptive import  AdaptiveInput
-# from models.bert_modules.embedding import BERTEmbedding
-# from models.bert_modules.transformer import TransformerBlock
-# from utils import fix_random_seed_as
 
 class Attention(nn.Module):
     """
@@ -73,7 +69,6 @@ class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):
         super().__init__()
         assert d_model % h == 0
-
         # We assume d_v always equals d_k
         self.d_k = d_model // h
         self.h = h
@@ -132,13 +127,8 @@ class BERTEmbedding(nn.Module):
         :param dropout: dropout rate
         """
         super().__init__()
-        c1 = int(vocab_size / 4)
-        # c2 = int(vocab_size / 2)
-        c3 = c1 * 3
-        # self.token = TokenEmbedding(vocab_size=vocab_size, embed_size=embed_size)
-        self.token = AdaptiveInput(embed_size, vocab_size, cutoffs=[c1, c3])
+        self.token = TokenEmbedding(vocab_size=vocab_size, embed_size=embed_size)
         self.position = PositionalEmbedding(max_len=max_len, d_model=embed_size)
-        # self.segment = SegmentEmbedding(embed_size=self.token.embedding_dim)
         self.dropout = nn.Dropout(p=dropout)
         self.embed_size = embed_size
 
@@ -172,90 +162,107 @@ class TransformerBlock(nn.Module):
         x = self.output_sublayer(x, self.feed_forward)
         return self.dropout(x)
 
-class BERTGroup(nn.Module):
-    def __init__(self, args, inner_group_num):
-        super().__init__()
-        self.inner_group_num = inner_group_num
-        heads = args.num_heads
-        dropout = args.dropout
-        self.hidden = args.hidden_size
-        self.inner_group = nn.ModuleList(
-            [TransformerBlock(self.hidden, heads, self.hidden * 4, dropout) for _ in range(self.inner_group_num)])
-
-    def forward(self, x, mask):
-        for block in self.inner_group:
-            x = block(x, mask)
-        return x
 
 class BERT(nn.Module):
-    def __init__(self, args):
+    def __init__(self, args, policy=False):
         super().__init__()
-
-        # fix_random_seed_as(args.model_init_seed)
-        # self.init_weights()
-
         max_len = args.max_len
         num_items = args.num_items
-        self.n_layers = args.block_num
+        if policy:
+            n_layers = int(args.block_num / 4)
+        else:
+            n_layers = args.block_num
         heads = args.num_heads
         vocab_size = num_items + 1
-        self.embedding_size = args.embedding_size
         self.hidden = args.hidden_size
         dropout = args.dropout
-        self.n_groups = args.num_groups
-        inner_group_num = int(self.n_layers / self.n_groups)
 
         # embedding for BERT, sum of positional, segment, token embeddings
-        self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.embedding_size, max_len=max_len, dropout=dropout)
-        self.emb_hidden_map = nn.Linear(self.embedding_size, self.hidden)
+        self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden, max_len=max_len, dropout=dropout)
+
         # multi-layers transformer blocks, deep network
-        self.group = nn.ModuleList(
-            [BERTGroup(args, inner_group_num) for _ in range(self.n_groups)])
+        self.transformer_blocks = nn.ModuleList(
+            [TransformerBlock(self.hidden, heads, self.hidden * 4, dropout) for _ in range(n_layers)])
 
     def forward(self, x):
         mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-
         # embedding the indexed sequence to sequence of vectors
         x = self.embedding(x)
-        if self.embedding_size != self.hidden:
-            x = self.emb_hidden_map(x)
-
         # running over multiple transformer blocks
-        for layer_idx in range(self.n_layers):
-            group_idx = int(layer_idx / self.n_layers * self.n_groups)
-            layer_module = self.group[group_idx]
-            x = layer_module(x, mask)
+        for transformer in self.transformer_blocks:
+            x = transformer.forward(x, mask)
 
         return x
 
     def init_weights(self):
         pass
 
-class BERT4cpModel(nn.Module):
+class SAS4infaccModel(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.bert = BERT(args)
         self.out = nn.Linear(self.bert.hidden, args.num_items + 1)
+        self.all_time = 0
 
-    # @classmethod
-    # def code(cls):
-    #     return 'bert'
+    def forward(self, x, policy_action):
+        mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
+        dilate_input = self.bert.embedding(x)
+        for layer_id, block in enumerate(self.bert.transformer_blocks):
+            layer_input = dilate_input
+            action_mask = policy_action[:, layer_id].reshape([-1, 1, 1])
+            layer_output = block(dilate_input, mask)
+            dilate_input = layer_output * action_mask + layer_input * (1 - action_mask)
 
-    def forward(self, x):#, pos, neg
+        return self.out(dilate_input)
+
+    def predict(self, x, policy_action):
+        # note: batch_size = 1
+        mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
+        dilate_input = self.bert.embedding(x)
+        # Residual locks
+        policy_action = policy_action.squeeze(0)
+        layer_input = dilate_input
+        since_time = time.time()
+        for layer_id, block in enumerate(self.bert.transformer_blocks):
+            if policy_action[layer_id].eq(1):
+                layer_input = block(layer_input, mask)
+        one_time = time.time() - since_time
+        self.all_time += one_time
+        seq_output = self.out(layer_input)  # dilate_outputs  # [batch_size, embedding_size]hidden
+        return seq_output
+
+
+class SAS_PolicyNetGumbel(nn.Module):
+    def __init__(self, args):
+        super(SAS_PolicyNetGumbel, self).__init__()
+        self.device = args.device
+        self.temp = args.temp
+        self.action_num = args.block_num
+        self.bert = BERT(args, policy=True)
+        self.out = nn.Linear(self.bert.hidden, self.action_num * 2)
+
+    def forward(self, x):
         x = self.bert(x)
-        return self.out(x)
-        # pos_emb = self.bert.embedding.token(pos)
-        # neg_emb = self.bert.embedding.token(neg)
-        # pos_logits = (x * pos_emb).mean(dim=-1)
-        # neg_logits = (x * neg_emb).mean(dim=-1)
-        # return pos_logits, neg_logits
+        seq_output = self.out(x)  # [batch_size, embedding_size]hidden
+        seq_output = seq_output.mean(1)
+        seq_output = seq_output.reshape([-1, self.action_num, 2])
+        seq_output = torch.sigmoid(seq_output)
+        seq_output = F.softmax(seq_output, dim=-1)
+        action = self.gumbel_softmax(seq_output, temp=self.temp, hard=True)
+        action_predict = action[:, :, 0]
+        return action_predict
 
-    def predict(self, log_seqs):  # for inference, item
-        log_feats = self.bert(log_seqs)  # user_ids hasn't been used yet
+    def gumbel_softmax(self, logits, temp=10, hard=False):
+        gumbel_softmax_sample = logits + self.sample_gumbel(logits.shape)
+        y = F.softmax(gumbel_softmax_sample / temp, dim=-1)
 
-        item_embs = self.bert.embedding.token.weight#(item)  # (U, I, C)
-        logits = log_feats.matmul(item_embs.transpose(0, 1))  # .squeeze(-1)
-        logits = logits.mean(1)
-        # preds = self.pos_sigmoid(logits) # rank same item list for different users
+        if hard:
+            y_hard = torch.eq(y, torch.max(y, -1, keepdim=True)[0]).to(y.dtype)
+            y1 = y_hard - y
+            y1 = y1.detach()
+            y = y1 + y
+        return y
 
-        return logits  # scores# preds # (U, I)
+    def sample_gumbel(self, shape, eps=1e-20):
+        u = torch.Tensor(shape).uniform_(0, 1).to(self.device)
+        return -torch.log(-torch.log(u + eps) + eps)
