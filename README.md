@@ -11,10 +11,10 @@ QK-article.csv: Users interactions with articles in QK.
 
 QB-artilce.csv: Usesr interactions with articles in QB.
 
-<!-- **Download the dataset:**
+**Download the dataset:**
 
 The Dataset can be downloaded from:
-https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing -->
+https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
 
 ### Benchmark
 
