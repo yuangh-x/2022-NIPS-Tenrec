@@ -1,7 +1,7 @@
 # Tenrec: A Large-scale Multipurpose Benchmark Dataset for Recommender Systems
 Tenrec is a real-world, Large-scale Multipurpose Benchmark Dataset where data was collected from user feedback on feeds recommendation platform of Tencent, it is for research purpose only.
 
-**Dataset in Tenrec:**
+### Dataset in Tenrec:
 
 QK-video.csv: Users interactions with videos in QK.
 
@@ -16,11 +16,11 @@ QB-artilce.csv: Usesr interactions with articles in QB.
 The Dataset can be downloaded from:
 https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing -->
 
-**Benchmark**
+### Benchmark
 
 Please run the commands as below to test the performance of each task
 
-**CTR:**
+##### CTR:
 
 AFM
 ```
@@ -43,7 +43,7 @@ Wide & Deep
 python main.py --task_name=ctr --seed=100 --model_name=wdl --dataset_path='data/ctr_data_1M.csv' --train_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.00005
 ```
 
-**Session-based Recommendation**
+##### Session-based Recommendation
 
 NextItNet
 ```
@@ -62,7 +62,7 @@ GRU4Rec
 python main.py --task_name=sequence --seed=100 --model_name=gru4rec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=64 --block_num=8 --embedding_size=64 --is_pretrain==1
 ```
 
-**Multi-Task Learing**
+##### Multi-Task Learing
 
 Only click
 ```
@@ -84,7 +84,7 @@ MMOE
 python main.py --task_name=mtl --seed=100 --model_name=esmm --dataset_path='data/ctr_data_1M.csv' --train_batch_size=4096 --val_batch_size=4096 --test_batch_size=4096 --epochs=20 --lr=0.0001 --embedding_size=32 ----mtl_task_num=2
 ```
 
-**Transfer Learning**
+##### Transfer Learning
 
 Plese run the command of Session-based Recommendation Task firstly.
 
@@ -98,7 +98,7 @@ SASRec with Pretrain
 python main.py --task_name=transfer_learning --seed=100 --model_name=sas4transfer --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/sequence_sasrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain==0
 ```
 
-**User Profile Prediction**
+##### User Profile Prediction
 
 Plese run the command of Session-based Recommendation Task firstly.
 
@@ -127,7 +127,7 @@ Peterrec with Pretrain
 python main.py --task_name=user_profile_represent --model_name=peter4profile --dataset_path=data/sbr_data_1M.csv --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.00005 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==0
 ```
 
-**Cold-start Recommendation**
+##### Cold-start Recommendation
 
 BERT4Rec without Pretrain
 ```
@@ -139,7 +139,7 @@ Peterrec without Pretrain
 python main.py --task_name=cold_start --seed=10 --model_name=peter4coldstart --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==2
 ```
 
-Plese run the command of Session-based Recommendation Task firstly.
+Please run the command of Session-based Recommendation Task firstly.
 
 BERT4Rec with Pretrain
 ```
@@ -151,7 +151,7 @@ Peterrec with Pretrain
 python main.py --task_name=cold_start --seed=10 --model_name=peter4coldstart --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==0
 ```
 
-**Lifelong User Representation Learning**
+##### Lifelong User Representation Learning
 
 SAS4Rec
 ```
@@ -163,7 +163,7 @@ Conure
 python main.py --task_name=life_long --seed=100 --task_num=4 --model_name=conure --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --re_epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3
 ```
 
-**Model Compression**
+##### Model Compression
 
 SASRec
 ```
@@ -174,7 +174,7 @@ Cprec
 python main.py --task_name=model_compr --seed=100 --model_name=cprec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==1
 ```
 
-**Model Training Speedup**
+##### Model Training Speedup
 
 SASRec-shallow train
 ```
@@ -182,18 +182,18 @@ python main.py --task_name=model_acc --seed=100 --model_name=sas4acc --dataset_p
 ```
 SASRec-deep train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain==0 --add_num_times=2 
+python main.py --task_name=model_acc --seed=100 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_sas4rec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain==0 --add_num_times=2 
 ```
 Stackrec-shallow train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==1
+python main.py --task_name=model_acc --seed=100 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_stackrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==1
 ```
 Stackrec-deep train
 ```
 python main.py --task_name=model_acc --seed=100 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==0 --add_num_times=2 
 ```
 
-**Model Inference Speedup**
+##### Model Inference Speedup
 
 SASRec
 ```
