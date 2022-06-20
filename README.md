@@ -209,7 +209,9 @@ Pytorch 1.7.0
 
 Tensorflow 2.3.0
 
-python 3.6.0
+sklearn 0.24.2
+
+python 3.6.8
 
 **License:**
 
