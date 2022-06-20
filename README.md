@@ -18,7 +18,7 @@ https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=shari
 
 ### Benchmark
 
-Please run the commands as below to test the performance of each task
+We apply Tenrec on ten distinct recommendation tasks. Please run the commands as below to test the performance of each task.
 
 #### CTR:
 
