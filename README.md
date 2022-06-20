@@ -206,7 +206,9 @@ python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_p
 
 #### Environments
 Pytorch 1.7.0
+
 Tensorflow 2.3.0
+
 python 3.6.0
 
 **License:**
