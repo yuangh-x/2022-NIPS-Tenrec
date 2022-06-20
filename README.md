@@ -204,6 +204,11 @@ Skiprec
 python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_path='data/QB-video.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=1 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==1
 ```
 
+#### Environments
+Pytorch 1.7.0
+Tensorflow 2.3.0
+python 3.6.0
+
 **License:**
 
 This dataset is licensed under a CC BY-NC 4.0 International License(https://creativecommons.org/licenses/by-nc/4.0/).
