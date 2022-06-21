@@ -1,15 +1,15 @@
 # Tenrec: A Large-scale Multipurpose Benchmark Dataset for Recommender Systems
-Tenrec is a real-world, Large-scale Multipurpose Benchmark Dataset where data was collected from user feedback on feeds recommendation platform of Tencent, it is for research purpose only.
+Tenrec is a large-scale multipurpose benchmark dataset for recommender systems where data was collected from two feeds (articles and videos) recommendation platforms of Tencent.
 
 ### Dataset in Tenrec:
 
-QK-video.csv: Users interactions with videos in QK.
+QK-video.csv: User video action in QK.
 
-QB-video.csv: Users interactions with videos in QB.
+QB-video.csv: User video action in QB.
 
-QK-article.csv: Users interactions with articles in QK.
+QK-article.csv: User article action in QK.
 
-QB-artilce.csv: Usesr interactions with articles in QB.
+QB-artilce.csv: User article action in QB.
 
 **Download the dataset:**
 
@@ -18,7 +18,7 @@ https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=shari
 
 ### Benchmark
 
-We apply Tenrec on ten distinct recommendation tasks. Please run the commands as below to test the performance of each task.
+We apply Tenrec on 10 recommendation tasks. Please run the commands as below to test the performance of each task.
 
 #### CTR:
 
