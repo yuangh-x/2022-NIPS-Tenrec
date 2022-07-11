@@ -11,10 +11,10 @@ QK-article.csv: User article action in QK.
 
 QB-artilce.csv: User article action in QB.
 
-//**Download the dataset:**
+<!--**Download the dataset:**
 
-//The Dataset can be downloaded from:
-//https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
+The Dataset can be downloaded from:
+https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing-->
 
 ### Benchmark
 
