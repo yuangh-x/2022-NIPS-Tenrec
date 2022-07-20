@@ -90,12 +90,12 @@ Plese run the command of Session-based Recommendation Task firstly.
 
 NextItNet with Pretrain
 ```
-python main.py --task_name=transfer_learning --seed=100 --model_name=peterrec --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=128 --block_num=16 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==0
+python main.py --task_name=transfer_learning --seed=100 --model_name=peterrec --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=128 --block_num=16 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain==0
 ```
 
 SASRec with Pretrain
 ```
-python main.py --task_name=transfer_learning --seed=100 --model_name=sas4transfer --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/sequence_sasrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain==0
+python main.py --task_name=transfer_learning --seed=100 --model_name=sas4transfer --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_sasrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain==0
 ```
 
 #### User Profile Prediction
