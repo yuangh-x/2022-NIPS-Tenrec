@@ -6,10 +6,6 @@ from torch import nn
 from torch.nn import functional as F
 from torch.nn.init import uniform_, xavier_normal_, constant_
 
-# from recbole.model.abstract_recommender import SequentialRecommender
-# from recbole.model.loss import RegLoss, BPRLoss
-
-
 class SkipRec(nn.Module):
     r"""The network architecture of the NextItNet model is formed of a stack of holed convolutional layers, which can
     efficiently increase the receptive fields without relying on the pooling operation.
@@ -23,25 +19,23 @@ class SkipRec(nn.Module):
         In addition, when dilations is not equal to 1, the training may be slow. To  speed up the efficiency, please set the parameters "reproducibility" False.
     """
 
-    def __init__(self, args): #config, dataset
-        super(SkipRec, self).__init__()#config, dataset
+    def __init__(self, args):
+        super(SkipRec, self).__init__()
 
         # load parameters info
-        self.embedding_size = args.embedding_size #config['embedding_size']
-        self.residual_channels = args.embedding_size #config['embedding_size']
-        self.block_num = args.block_num #config['block_num']
-        self.dilations = args.dilations * self.block_num #config['dilations'] * self.block_num
-        self.kernel_size = args.kernel_size #config['kernel_size']
+        self.embedding_size = args.embedding_size
+        self.residual_channels = args.embedding_size
+        self.block_num = args.block_num
+        self.dilations = args.dilations * self.block_num
+        self.kernel_size = args.kernel_size
         self.output_dim = args.num_items
         self.pad_token = args.pad_token
         self.all_time = 0
-        # self.reg_weight = config['reg_weight']
-        # self.loss_type = config['loss_type']
 
         # define layers and loss
         self.item_embedding = nn.Embedding(self.output_dim+1, self.embedding_size, padding_idx=self.pad_token)
 
-        # residual blocks    dilations in blocks:[1,2,4,8,1,2,4,8,...]
+        # residual blocks
         rb = [
             ResidualBlock_b(
                 self.residual_channels, self.residual_channels, kernel_size=self.kernel_size, dilation=dilation
@@ -60,8 +54,7 @@ class SkipRec(nn.Module):
             xavier_normal_(module.weight.data)
             if module.bias is not None:
                 constant_(module.bias.data, 0.1)
-    def forward(self, item_seq, policy_action): #, pos, neg
-        # print("--------", item_seq.max())
+    def forward(self, item_seq, policy_action):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_input = item_seq_emb
@@ -71,18 +64,11 @@ class SkipRec(nn.Module):
             layer_output = block(dilate_input)
 
             dilate_input = layer_output * action_mask + layer_input * (1 - action_mask)
-        # dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
-        # pos_emb = self.item_embedding(pos)
-        # neg_emb = self.item_embedding(neg)
-        # pos_logit = (dilate_input * pos_emb).mean(-1)
-        # neg_logit = (dilate_input * neg_emb).mean(-1)
         seq_output = self.final_layer(dilate_input) #dilate_outputs  # [batch_size, embedding_size]hidden
-        return seq_output#pos_logit, neg_logit
+        return seq_output
 
-    def predict(self, item_seq, policy_action):  # , pos, neg
+    def predict(self, item_seq, policy_action):
         # note: batch_size = 1
-        # print("--------", item_seq.max())
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_input = item_seq_emb
@@ -94,14 +80,8 @@ class SkipRec(nn.Module):
                 layer_input = block(layer_input)
         one_time = time.time() - since_time
         self.all_time += one_time
-        # dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
-        # pos_emb = self.item_embedding(pos)
-        # neg_emb = self.item_embedding(neg)
-        # pos_logit = (dilate_input * pos_emb).mean(-1)
-        # neg_logit = (dilate_input * neg_emb).mean(-1)
         seq_output = self.final_layer(layer_input)  # dilate_outputs  # [batch_size, embedding_size]hidden
-        return seq_output  # pos_logit, neg_logit#
+        return seq_output
 
 class ResidualBlock_a(nn.Module):
     r"""
@@ -194,18 +174,18 @@ class PolicyNetGumbel(nn.Module):
         super(PolicyNetGumbel, self).__init__()
         self.device = args.device
         self.temp = args.temp
-        self.embedding_size = args.embedding_size  # config['embedding_size']
-        self.residual_channels = args.embedding_size  # config['embedding_size']
-        self.block_num = args.block_num  # config['block_num']
-        self.dilations = args.dilations   # config['dilations'] * self.block_num
-        self.kernel_size = args.kernel_size  # config['kernel_size']
+        self.embedding_size = args.embedding_size
+        self.residual_channels = args.embedding_size
+        self.block_num = args.block_num
+        self.dilations = args.dilations
+        self.kernel_size = args.kernel_size
         self.output_dim = args.num_items
         self.pad_token = args.pad_token
         self.action_num = len(self.dilations * self.block_num)
 
         self.item_embedding = nn.Embedding(self.output_dim + 1, self.embedding_size, padding_idx=self.pad_token)
 
-        # residual blocks    dilations in blocks:[1,2,4,8,1,2,4,8,...]
+        # residual blocks
         rb = [
             ResidualBlock_b(
                 self.residual_channels, self.residual_channels, kernel_size=self.kernel_size, dilation=dilation
@@ -214,13 +194,12 @@ class PolicyNetGumbel(nn.Module):
         self.residual_blocks = nn.Sequential(*rb)
 
         # fully-connected layer
-        self.final_layer = nn.Linear(self.residual_channels, self.action_num * 2) #self.output_dim + 1
+        self.final_layer = nn.Linear(self.residual_channels, self.action_num * 2)
 
     def forward(self, item_seq):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
         seq_output = self.final_layer(dilate_outputs)  # [batch_size, embedding_size]hidden
         seq_output = seq_output.mean(1)
         seq_output = seq_output.reshape([-1, self.action_num, 2])
@@ -228,7 +207,7 @@ class PolicyNetGumbel(nn.Module):
         seq_output = F.softmax(seq_output, dim=-1)
         action = self.gumbel_softmax(seq_output, temp=self.temp, hard=True)
         action_predict = action[:, :, 0]
-        return action_predict#seq_output
+        return action_predict
 
     def gumbel_softmax(self, logits, temp=10, hard=False):
         gumbel_softmax_sample = logits + self.sample_gumbel(logits.shape)

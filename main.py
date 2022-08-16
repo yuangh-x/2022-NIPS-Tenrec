@@ -17,6 +17,10 @@ from model.ctr.xdeepfm import xDeepFM
 from model.ctr.nfm import NFM
 from model.ctr.wdl import WDL
 from model.ctr.afm import AFM
+from model.ctr.dcn import DCN
+from model.ctr.dcnmix import DCNMix
+from model.ctr.dien import DIEN
+from model.ctr.din import DIN
 from model.transfer_learning.peterrec import PeterRec
 from model.mtl.esmm import ESMM
 from model.mtl.mmoe import MMOE
@@ -49,13 +53,18 @@ def get_data(args):
     path = args.dataset_path
     rng = random.Random(args.seed)
     if name == 'ctr':
-        train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(path)
-        return train, test, train_model_input, test_model_input, lf_columns, df_columns
+        if args.model_name == 'din' or args.model_name == 'dien':
+            train, test, train_model_input, test_model_input, df_columns, hist_list = ctr_din_dataset(args, path)
+            return train, test, train_model_input, test_model_input, df_columns, hist_list
+        else:
+            train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(args, path)
+            #share historical embedding
+            # train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(args, path)
+            return train, test, train_model_input, test_model_input, lf_columns, df_columns
     elif name == 'sequence' or name == 'transfer_learning' or name == 'model_acc' or name == 'model_compr' or name == 'inference_acc' or name == 'eval':
         _, data, user_count, item_count = sequencedataset(args.item_min, args, path)
         args.num_users = user_count
         args.num_items = item_count
-        # args.pad_token = item_count + 1
         train_data, val_data, test_data = train_val_test_split(data)
         train_data_s, val_data_s = {}, {}
         data_len = len(train_data)
@@ -79,13 +88,29 @@ def get_data(args):
         test_dataloader = get_test_loader(test_dataset, args)
         return train_dataloader, valid_dataloader, test_dataloader
     elif name == 'cold_start':
-        data, user_count, vocab_size, item_count = colddataset(args.item_min, args, path)
+        if args.ch:
+            print("hot & cold")
+            cold_data, hot_data, user_count, vocab_size, item_count = colddataset(args.item_min, args)
+            size1 = len(cold_data) // 2
+            cold_1 = cold_data[:size1]
+            cold_2 = cold_data[size1:]
+            val_len = len(cold_2) // 2
+            train_data = hot_data.append(cold_1)
+            val_data = cold_2[:val_len]
+            test_data = cold_2[val_len:]
+            x_train, y_train = train_data.source.values.tolist(), train_data.target.values.tolist()
+            x_val, y_val = val_data.source.values.tolist(), val_data.target.values.tolist()
+            x_test, y_test = test_data.source.values.tolist(), test_data.target.values.tolist()
+        else:
+            data, user_count, vocab_size, item_count = colddataset(args.item_min, args)
+            x_train, x_test, y_train, y_test = train_test_split(data.source.values.tolist(),
+                                                                data.target.values.tolist(),
+                                                                test_size=0.2, random_state=args.seed)
+            x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=args.seed)
         args.num_users = user_count
         args.num_items = item_count
         args.num_embedding = vocab_size
-        x_train, x_test, y_train, y_test = train_test_split(data.source.values.tolist(), data.target.values.tolist(),
-                                                            test_size=0.2, random_state=args.seed)
-        x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=args.seed)
+
         train_dataset, valid_dataset = ColdDataset(x_train, y_train, args.max_len, args.pad_token), ColdEvalDataset(
             x_val, y_val, args.max_len, args.pad_token, args.num_items)
         test_dataset = ColdEvalDataset(x_test, y_test, args.max_len, args.pad_token, args.num_items)
@@ -137,7 +162,6 @@ def get_data(args):
         args.num_users = user_count
         args.num_items = item_count
         args.num_labels = label_count
-        # args.pad_token = item_count + 1
         x_train, x_test, y_train, y_test = train_test_split(df.history.values.tolist(), df.profile.values.tolist(), test_size=0.2, random_state=args.seed)
         x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=0.5, random_state=args.seed)
         train_dataset, valid_dataset = ProfileDataset(x_train, y_train, args.max_len, args.pad_token), ProfileDataset(x_val, y_val, args.max_len, args.pad_token)
@@ -170,7 +194,7 @@ def get_data(args):
     else:
         raise ValueError('unknown dataset name: ' + name)
 
-def get_model(args, linear_feature_columns=None, dnn_feature_columns=None):
+def get_model(args, linear_feature_columns=None, dnn_feature_columns=None, history_feature_list=None):
     name = args.model_name
     if name == 'deepfm':
         return DeepFM(linear_feature_columns, dnn_feature_columns, task='binary', device=args.device)
@@ -182,6 +206,14 @@ def get_model(args, linear_feature_columns=None, dnn_feature_columns=None):
         return WDL(linear_feature_columns, dnn_feature_columns, task='binary', device=args.device)
     elif name == 'afm':
         return AFM(linear_feature_columns, dnn_feature_columns, task='binary', device=args.device)
+    elif name == 'dcn':
+        return DCN(linear_feature_columns, dnn_feature_columns, task='binary', device=args.device)
+    elif name == 'dcnmix':
+        return DCNMix(linear_feature_columns, dnn_feature_columns, task='binary', device=args.device)
+    elif name == 'din':
+        return DIN(dnn_feature_columns, history_feature_list, task='binary', device=args.device)
+    elif name == 'dien':
+        return DIEN(dnn_feature_columns, history_feature_list, task='binary', device=args.device)
     elif name == 'bert4rec':
         return BERTModel(args)
     elif name == 'sasrec':
@@ -323,6 +355,9 @@ if __name__ == "__main__":
     parser.add_argument('--task4_out', type=int, default=0)
     parser.add_argument('--eval', type=bool, default=True)
 
+    # cold_start
+    parser.add_argument('--ch', type=bool, default=True)
+
     args = parser.parse_args()
     if args.is_parallel:
         torch.distributed.init_process_group(backend="nccl")
@@ -333,7 +368,12 @@ if __name__ == "__main__":
     writer = SummaryWriter()
     print(args)
     if args.task_name == 'ctr':
-        train, test, train_model_input, test_model_input, lf_columns, df_columns = get_data(args)
+        if args.model_name == 'din' or args.model_name == 'dien':
+            train, test, train_model_input, test_model_input, df_columns, hist_list = get_data(args)
+            model = get_model(args, linear_feature_columns=None, dnn_feature_columns=df_columns, history_feature_list=hist_list)
+        else:
+            train, test, train_model_input, test_model_input, lf_columns, df_columns = get_data(args)
+            model = get_model(args, linear_feature_columns=lf_columns, dnn_feature_columns=df_columns, history_feature_list=None)
         model = get_model(args, lf_columns, df_columns)
         model.compile(args, "adam", "binary_crossentropy",
                       metrics=["auc", "acc"])

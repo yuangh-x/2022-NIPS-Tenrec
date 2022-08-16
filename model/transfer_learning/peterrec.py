@@ -1,36 +1,27 @@
-# -*- coding: utf-8 -*-
 import numpy as np
-import torch
 from torch import nn
 from torch.nn import functional as F
-from torch.nn.init import uniform_, xavier_normal_, constant_, normal_
-
-# from recbole.model.abstract_recommender import SequentialRecommender
-# from recbole.model.loss import RegLoss, BPRLoss
-
+from torch.nn.init import uniform_, constant_, normal_
 
 class PeterRec(nn.Module):
 
-    def __init__(self, args): #config, dataset
-        super(PeterRec, self).__init__()#config, dataset
+    def __init__(self, args):
+        super(PeterRec, self).__init__()
 
         # load parameters info
-        self.embedding_size = args.embedding_size #config['embedding_size']
-        self.residual_channels = args.embedding_size #config['embedding_size']
-        self.block_num = args.block_num #config['block_num']
-        self.dilations = args.dilations * self.block_num #config['dilations'] * self.block_num
-        self.kernel_size = args.kernel_size #config['kernel_size']
+        self.embedding_size = args.embedding_size
+        self.residual_channels = args.embedding_size
+        self.block_num = args.block_num
+        self.dilations = args.dilations * self.block_num
+        self.kernel_size = args.kernel_size
         self.output_dim = args.num_items
         self.is_mp = args.is_mp
-
         self.pad_token = args.pad_token
-        # self.reg_weight = config['reg_weight']
-        # self.loss_type = config['loss_type']
 
         # define layers and loss
         self.item_embedding = nn.Embedding(self.output_dim+1, self.embedding_size, padding_idx=self.pad_token)
 
-        # residual blocks    dilations in blocks:[1,2,4,8,1,2,4,8,...]
+        # residual blocks
         rb = [
             ResidualBlock_b_2mp_parallel(
                 self.residual_channels, self.residual_channels, kernel_size=self.kernel_size, dilation=dilation, is_mp=self.is_mp
@@ -41,16 +32,8 @@ class PeterRec(nn.Module):
         # fully-connected layer
         self.final_layer = nn.Linear(self.residual_channels, self.output_dim+1)
 
-        # if self.loss_type == 'BPR':
-        #     self.loss_fct = BPRLoss()
-        # elif self.loss_type == 'CE':
-        #     self.loss_fct = nn.CrossEntropyLoss()
-        # else:
-        #     raise NotImplementedError("Make sure 'loss_type' in ['BPR', 'CE']!")
-        # self.reg_loss = RegLoss()
-
         # parameters initialization
-        self.apply(self._init_weights)
+        # self.apply(self._init_weights)
 
     def _init_weights(self, module):
         if isinstance(module, nn.Embedding):
@@ -62,19 +45,12 @@ class PeterRec(nn.Module):
             if module.bias is not None:
                 constant_(module.bias.data, 0.1)
 
-    def forward(self, item_seq):#, pos, neg
-        # print("--------", item_seq.max())
+    def forward(self, item_seq):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
         seq_output = self.final_layer(dilate_outputs)  # [batch_size, embedding_size]hidden
-        # pos_emb = self.item_embedding(pos)
-        # neg_emb = self.item_embedding(neg)
-        # pos_logit = (dilate_outputs * pos_emb).mean(dim=-1)
-        # neg_logit = (dilate_outputs * neg_emb).mean(dim=-1)
-
-        return seq_output#  pos_logit, neg_logit
+        return seq_output
 
     def predict(self, item_seq, item):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
@@ -86,9 +62,9 @@ class PeterRec(nn.Module):
 
 
 class mp(nn.Module):
-    def __init__(self, channel, cardinality=8):
+    def __init__(self, channel):
         super(mp, self).__init__()
-        self.hidden_size = int(channel / 4)#(cardinality * 4)
+        self.hidden_size = int(channel / 4)
         self.conv1 = nn.Conv1d(channel, self.hidden_size, 1)
         self.conv2 = nn.Conv1d(self.hidden_size, channel, 1)
 
@@ -209,7 +185,6 @@ class ResidualBlock_b_2mp_serial(nn.Module):
         self.ln1 = nn.LayerNorm(out_channel, eps=1e-8)
         self.conv2 = nn.Conv2d(out_channel, out_channel, kernel_size=(1, kernel_size), padding=0, dilation=dilation * 2)
         self.ln2 = nn.LayerNorm(out_channel, eps=1e-8)
-        # self.mp = mp(in_channel)
         self.dilation = dilation
         self.kernel_size = kernel_size
         self.is_mp = is_mp

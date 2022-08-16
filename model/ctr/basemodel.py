@@ -1,10 +1,3 @@
-# -*- coding:utf-8 -*-
-"""
-
-Author:
-    Weichen Shen,weichenswc@163.com
-
-"""
 from __future__ import print_function
 
 import time
@@ -17,7 +10,6 @@ import torch.utils.data as Data
 from sklearn.metrics import *
 from torch.utils.data import DataLoader
 from copy import copy
-from tqdm import tqdm
 
 try:
     from tensorflow.python.keras.callbacks import CallbackList
@@ -47,11 +39,6 @@ class Linear(nn.Module):
         self.embedding_dict = create_embedding_matrix(feature_columns, init_std, linear=True, sparse=False,
                                                       device=device)
 
-        #         nn.ModuleDict(
-        #             {feat.embedding_name: nn.Embedding(feat.dimension, 1, sparse=True) for feat in
-        #              self.sparse_feature_columns}
-        #         )
-        # .to("cuda:1")
         for tensor in self.embedding_dict.values():
             nn.init.normal_(tensor.weight, mean=0, std=init_std)
 
@@ -113,10 +100,6 @@ class BaseModel(nn.Module):
         self.dnn_feature_columns = dnn_feature_columns
 
         self.embedding_dict = create_embedding_matrix(dnn_feature_columns, init_std, sparse=False, device=device)
-        #         nn.ModuleDict(
-        #             {feat.embedding_name: nn.Embedding(feat.dimension, embedding_size, sparse=True) for feat in
-        #              self.dnn_feature_columns}
-        #         )
 
         self.linear_model = Linear(
             linear_feature_columns, self.feature_index, device=device)
@@ -236,11 +219,8 @@ class BaseModel(nn.Module):
             loss_epoch = 0
             total_loss_epoch = 0
             train_result = {}
-            # try:
             # for (x_train, y_train) in tqdm(train_loader):
             for (x_train, y_train) in train_loader:
-            # with tqdm(enumerate(train_loader), disable=verbose != 1) as t:
-            #     for _, (x_train, y_train) in t:
                 x = x_train.to(self.device).float()
                 y = y_train.to(self.device).float()
 
@@ -263,12 +243,6 @@ class BaseModel(nn.Module):
                             train_result[name] = []
                         train_result[name].append(metric_fun(
                             y.cpu().data.numpy(), y_pred.cpu().data.numpy().astype("float64")))
-
-
-            # except KeyboardInterrupt:
-            #     t.close()
-            #     raise
-            # t.close()
 
             # Add epoch_logs
             epoch_logs["loss"] = total_loss_epoch / sample_num

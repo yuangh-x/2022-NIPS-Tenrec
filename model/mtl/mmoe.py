@@ -65,7 +65,6 @@ class MMOE(nn.Module):
             gate.data.normal_(0, 1)
         self.gates_bias = [torch.nn.Parameter(torch.rand(n_expert), requires_grad=True) for _ in range(num_task)]
 
-        # esmm ctr和ctcvr独立任务的DNN结构
         for i in range(self.num_task):
             setattr(self, 'task_{}_dnn'.format(i + 1), nn.ModuleList())
             hid_dim = [mmoe_hidden_dim] + hidden_dim
@@ -133,18 +132,3 @@ class MMOE(nn.Module):
             task_outputs.append(x)
 
         return task_outputs
-
-
-# if __name__ == "__main__":
-#     import numpy as np
-#
-#     a = torch.from_numpy(np.array([[1, 2, 4, 2, 0.5, 0.1],
-#                                    [4, 5, 3, 8, 0.6, 0.43],
-#                                    [6, 3, 2, 9, 0.12, 0.32],
-#                                    [9, 1, 1, 1, 0.12, 0.45],
-#                                    [8, 3, 1, 4, 0.21, 0.67]]))
-#     user_cate_dict = {'user_id': (11, 0), 'user_list': (12, 3), 'user_num': (1, 4)}
-#     item_cate_dict = {'item_id': (8, 1), 'item_cate': (6, 2), 'item_num': (1, 5)}
-#     mmoe = MMOE(user_cate_dict, item_cate_dict)
-#     outs = mmoe(a)
-#     print(outs)

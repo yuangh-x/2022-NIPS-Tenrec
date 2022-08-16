@@ -8,15 +8,15 @@ from torch.nn.init import uniform_, xavier_normal_, constant_
 
 class Conure(nn.Module):
 
-    def __init__(self, args): #config, dataset
-        super(Conure, self).__init__()#config, dataset
+    def __init__(self, args):
+        super(Conure, self).__init__()
 
         # load parameters info
-        self.embedding_size = args.embedding_size #config['embedding_size']
-        self.residual_channels = args.embedding_size #config['embedding_size']
-        self.block_num = args.block_num #config['block_num']
-        self.dilations = args.dilations * self.block_num #config['dilations'] * self.block_num
-        self.kernel_size = args.kernel_size #config['kernel_size']
+        self.embedding_size = args.embedding_size
+        self.residual_channels = args.embedding_size
+        self.block_num = args.block_num
+        self.dilations = args.dilations * self.block_num
+        self.kernel_size = args.kernel_size
         self.output_dim = args.num_items
         self.vocab_size = args.num_embedding + 1
         self.pad_token = args.pad_token
@@ -26,13 +26,10 @@ class Conure(nn.Module):
         self.output_dim3 = args.task3_out
         self.output_dim4 = args.task4_out
 
-        # self.reg_weight = config['reg_weight']
-        # self.loss_type = config['loss_type']
-
         # define layers and loss
         self.item_embedding = nn.Embedding(self.vocab_size, self.embedding_size, padding_idx=self.pad_token)
 
-        # residual blocks    dilations in blocks:[1,2,4,8,1,2,4,8,...]
+        # residual blocks
         rb = [
             ResidualBlock_b(
                 self.residual_channels, self.residual_channels, kernel_size=self.kernel_size, dilation=dilation
@@ -41,22 +38,10 @@ class Conure(nn.Module):
         self.residual_blocks = nn.Sequential(*rb)
 
         # fully-connected layer
-        # self.final_layer = nn.Linear(self.residual_channels, self.output_dim+1)
         self.final_layer1 = nn.Linear(self.residual_channels, self.output_dim1 + 1)
         self.final_layer2 = nn.Linear(self.residual_channels, self.output_dim2 + 1)
         self.final_layer3 = nn.Linear(self.residual_channels, self.output_dim3 + 1)
         self.final_layer4 = nn.Linear(self.residual_channels, self.output_dim4 + 1)
-
-        # if self.loss_type == 'BPR':
-        #     self.loss_fct = BPRLoss()
-        # elif self.loss_type == 'CE':
-        #     self.loss_fct = nn.CrossEntropyLoss()
-        # else:
-        #     raise NotImplementedError("Make sure 'loss_type' in ['BPR', 'CE']!")
-        # self.reg_loss = RegLoss()
-
-        # parameters initialization
-        # self.apply(self._init_weights)
 
     def _init_weights(self, module):
         if isinstance(module, nn.Embedding):
@@ -67,13 +52,10 @@ class Conure(nn.Module):
             if module.bias is not None:
                 constant_(module.bias.data, 0.1)
 
-    def forward(self, item_seq):#, pos, neg
-        # print("--------", item_seq.max())
+    def forward(self, item_seq):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
-        # seq_output = self.final_layer(dilate_outputs)  # [batch_size, embedding_size]hidden
         if self.times == 0:
             seq_output = self.final_layer1(dilate_outputs)  # [batch_size, embedding_size]hidden
         elif self.times == 1:
@@ -82,11 +64,7 @@ class Conure(nn.Module):
             seq_output = self.final_layer3(dilate_outputs)
         else:
             seq_output = self.final_layer4(dilate_outputs)
-        # pos_emb = self.item_embedding(pos)
-        # neg_emb = self.item_embedding(neg)
-        # pos_logit = (dilate_outputs * pos_emb).mean(-1)
-        # neg_logit = (dilate_outputs * neg_emb).mean(-1)
-        return seq_output#pos_logit, neg_logit
+        return seq_output
 
     def predict(self, log_seqs, item):  # for inference
         item_seq_emb = self.item_embedding(log_seqs)  # [batch_size, seq_len, embed_size]
@@ -96,9 +74,8 @@ class Conure(nn.Module):
         item_embs = self.item_embedding(item)  # (U, I, C)
         logits = log_feats.matmul(item_embs.transpose(1, 2))  # .squeeze(-1)
         logits = logits.mean(1)
-        # preds = self.pos_sigmoid(logits) # rank same item list for different users
 
-        return logits  # scores# preds # (U, I)
+        return logits
 
 class ResidualBlock_a(nn.Module):
     r"""

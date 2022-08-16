@@ -1,12 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-
 import math
-
-# from models.bert_modules.embedding import BERTEmbedding
-# from models.bert_modules.transformer import TransformerBlock
-# from utils import fix_random_seed_as
 
 class Attention(nn.Module):
     """
@@ -134,12 +129,11 @@ class BERTEmbedding(nn.Module):
         super().__init__()
         self.token = TokenEmbedding(vocab_size=vocab_size, embed_size=embed_size)
         self.position = PositionalEmbedding(max_len=max_len, d_model=embed_size)
-        # self.segment = SegmentEmbedding(embed_size=self.token.embedding_dim)
         self.dropout = nn.Dropout(p=dropout)
         self.embed_size = embed_size
 
     def forward(self, sequence):
-        x = self.token(sequence) + self.position(sequence)  # + self.segment(segment_label)
+        x = self.token(sequence) + self.position(sequence)
         return self.dropout(x)
 
 class TransformerBlock(nn.Module):
@@ -187,16 +181,10 @@ class bottle_net(nn.Module):
 class BERT(nn.Module):
     def __init__(self, args):
         super().__init__()
-
-        # fix_random_seed_as(args.model_init_seed)
-        # self.init_weights()
-
         max_len = args.max_len
-        num_items = args.num_items
         n_layers = args.block_num
         heads = args.num_heads
         vocab_size = args.num_embedding + 1
-        # vocab_size = num_items + 1
         hidden = args.hidden_size
         self.hidden = hidden
         self.is_mp = args.is_mp
@@ -204,13 +192,6 @@ class BERT(nn.Module):
 
         # embedding for BERT, sum of positional, segment, token embeddings
         self.embedding = BERTEmbedding(vocab_size=vocab_size, embed_size=self.hidden, max_len=max_len, dropout=dropout)
-
-        # multi-layers transformer blocks, deep network
-        # self.transformer_blocks = nn.ModuleList(
-        #     [TransformerBlock(hidden, heads, hidden * 4, dropout) for _ in range(n_layers)])
-        #
-        # if self.is_mp:
-        #     self.bottle_net = bottle_net(self.hidden)
 
         transformer_blocks = []
         for _ in range(n_layers):
@@ -245,19 +226,9 @@ class BERT_ColdstartModel(nn.Module):
         self.num_items = args.num_items
         self.out = nn.Linear(self.bert.hidden, args.num_items + 1)
 
-    # @classmethod
-    # def code(cls):
-    #     return 'bert'
-
-    def forward(self, x):#, pos, neg
+    def forward(self, x):
         x = self.bert(x)
         return self.out(x)
-        # pos_emb = self.bert.embedding.token(pos)
-        # neg_emb = self.bert.embedding.token(neg)
-        # pos_logits = (x * pos_emb).mean(dim=-1)
-        # neg_logits = (x * neg_emb).mean(dim=-1)
-        #
-        # return pos_logits, neg_logits
 
     def predict(self, x, item):
         x = self.bert(x)

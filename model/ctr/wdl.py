@@ -1,11 +1,4 @@
 # -*- coding:utf-8 -*-
-"""
-Author:
-    Weichen Shen,weichenswc@163.com
-Reference:
-    [1] Cheng H T, Koc L, Harmsen J, et al. Wide & deep learning for recommender systems[C]//Proceedings of the 1st Workshop on Deep Learning for Recommender Systems. ACM, 2016: 7-10.(https://arxiv.org/pdf/1606.07792.pdf)
-"""
-
 import torch
 import torch.nn as nn
 

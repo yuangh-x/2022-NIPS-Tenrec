@@ -4,10 +4,6 @@ import torch
 import time
 import math
 
-# from models.bert_modules.embedding import BERTEmbedding
-# from models.bert_modules.transformer import TransformerBlock
-# from utils import fix_random_seed_as
-
 class Attention(nn.Module):
     """
     Compute 'Scaled Dot Product Attention
@@ -134,12 +130,11 @@ class BERTEmbedding(nn.Module):
         super().__init__()
         self.token = TokenEmbedding(vocab_size=vocab_size, embed_size=embed_size)
         self.position = PositionalEmbedding(max_len=max_len, d_model=embed_size)
-        # self.segment = SegmentEmbedding(embed_size=self.token.embedding_dim)
         self.dropout = nn.Dropout(p=dropout)
         self.embed_size = embed_size
 
     def forward(self, sequence):
-        x = self.token(sequence) + self.position(sequence)  # + self.segment(segment_label)
+        x = self.token(sequence) + self.position(sequence)
         return self.dropout(x)
 
 class TransformerBlock(nn.Module):
@@ -172,9 +167,6 @@ class TransformerBlock(nn.Module):
 class BERT(nn.Module):
     def __init__(self, args):
         super().__init__()
-
-        # fix_random_seed_as(args.model_init_seed)
-        # self.init_weights()
 
         max_len = args.max_len
         num_items = args.num_items
@@ -212,18 +204,9 @@ class BERTModel(nn.Module):
         self.out = nn.Linear(self.bert.hidden, args.num_items + 1)
         self.all_time = 0
 
-    # @classmethod
-    # def code(cls):
-    #     return 'bert'
-
-    def forward(self, x):#, pos, neg
+    def forward(self, x):
         x = self.bert(x)
         return self.out(x)
-        # pos_emb = self.bert.embedding.token(pos)
-        # neg_emb = self.bert.embedding.token(neg)
-        # pos_logits = (x * pos_emb).mean(dim=-1)
-        # neg_logits = (x * neg_emb).mean(dim=-1)
-        # return pos_logits, neg_logits
 
     def predict(self, x):
         mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)

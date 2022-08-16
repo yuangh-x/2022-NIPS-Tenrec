@@ -11,7 +11,7 @@ from torch.utils.data.distributed import DistributedSampler
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
-from model.ctr.inputs import SparseFeat, get_feature_names
+from model.ctr.inputs import *
 
 tqdm.pandas()
 
@@ -80,6 +80,152 @@ def sample_data(df):
     del p_df, n_df
     df = df.sample(frac=1)
     return df
+
+def ctr_share_dataset(path=None):
+    if not path:
+        return
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "video_category", "gender", "age", "hist_1", "hist_2",
+                       "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
+    df['video_category'] = df['video_category'].astype(str)
+    df = sample_data(df)
+
+    sparse_features = ["user_id", "item_id", "video_category", "gender", "age"]
+    hist_feature = ["hist_1", "hist_2",
+                       "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
+    lbe = LabelEncoder()
+    df['click'] = lbe.fit_transform(df['click'])
+
+    hist_enc = LabelEncoder()
+    for feat in tqdm(sparse_features + hist_feature): #
+        if 'item_id' in feat or 'hist' in feat:
+            df[feat] = hist_enc.fit_transform(df[feat])
+        else:
+            lbe = LabelEncoder()
+            df[feat] = lbe.fit_transform(df[feat])
+
+    hist_set = set(df['hist_1'])
+    hist_set.update(df['hist_2'])
+    hist_set.update(df['hist_3'])
+    hist_set.update(df['hist_4'])
+    hist_set.update(df['hist_5'])
+    hist_set.update(df['hist_6'])
+    hist_set.update(df['hist_7'])
+    hist_set.update(df['hist_8'])
+    hist_set.update(df['hist_9'])
+    hist_set.update(df['hist_10'])
+    hist_set.update(df['item_id'])
+
+    # hist concat
+    hist_df = df[["user_id", "hist_1", "hist_2", "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9",
+                  "hist_10"]]
+    hist_df = hist_df.drop_duplicates()
+    hist_dict = hist_df.set_index('user_id').T.to_dict('list')
+
+    df['hist_item_id'] = df['user_id']
+    df['hist_item_id'] = df['hist_item_id'].map(hist_dict)
+
+    # df['hist_item_id'] = np.ndarray(df['hist_item_id'])
+    df.drop(columns=["hist_1", "hist_2", "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"], inplace=True)
+    df['seq_length'] = 10
+
+    fixlen_feature_columns = []
+    for feat in sparse_features:
+        if feat == 'item_id':
+            fixlen_feature_columns.append(SparseFeat(feat, len(hist_set)))
+        else:
+            fixlen_feature_columns.append(SparseFeat(feat, df[feat].nunique()))
+
+    fixlen_feature_columns += [
+        VarLenSparseFeat(
+            SparseFeat('hist_item_id', vocabulary_size=len(hist_set), embedding_dim=32),
+            maxlen=10, length_name="seq_length")]
+    linear_feature_columns = fixlen_feature_columns
+    dnn_feature_columns = fixlen_feature_columns
+    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+    train, test = train_test_split(df, test_size=0.1)
+    del df
+    train_hist_item = np.array(train['hist_item_id'].values.tolist())
+    test_hist_item = np.array(test['hist_item_id'].values.tolist())
+
+    train_model_input = {name: train[name] for name in feature_names}
+    train_model_input['hist_item_id'] = train_hist_item
+    test_model_input = {name: test[name] for name in feature_names}
+    test_model_input['hist_item_id'] = test_hist_item
+    return train, test, train_model_input, test_model_input, linear_feature_columns, dnn_feature_columns
+
+def ctr_din_dataset(path=None):
+    if not path:
+        return
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "video_category", "gender", "age", "hist_1", "hist_2",
+                       "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
+    df['video_category'] = df['video_category'].astype(str)
+
+    df = sample_data(df)
+
+    sparse_features = ["user_id", "item_id", "video_category", "gender", "age"]
+    hist_feature = ["hist_1", "hist_2",
+                       "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
+    lbe = LabelEncoder()
+    df['click'] = lbe.fit_transform(df['click'])
+    #
+    hist_enc = LabelEncoder()
+    for feat in tqdm(sparse_features + hist_feature):
+        if 'item_id' in feat or 'hist' in feat:
+            df[feat] = hist_enc.fit_transform(df[feat])
+        else:
+            lbe = LabelEncoder()
+            df[feat] = lbe.fit_transform(df[feat])
+
+    hist_set = set(df['hist_1'])
+    hist_set.update(df['hist_2'])
+    hist_set.update(df['hist_3'])
+    hist_set.update(df['hist_4'])
+    hist_set.update(df['hist_5'])
+    hist_set.update(df['hist_6'])
+    hist_set.update(df['hist_7'])
+    hist_set.update(df['hist_8'])
+    hist_set.update(df['hist_9'])
+    hist_set.update(df['hist_10'])
+    hist_set.update(df['item_id'])
+
+    # hist concat
+    hist_df = df[["user_id", "hist_1", "hist_2", "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9",
+                  "hist_10"]]
+    hist_df = hist_df.drop_duplicates()
+    hist_dict = hist_df.set_index('user_id').T.to_dict('list')
+
+    df['hist_item_id'] = df['user_id']
+    df['hist_item_id'] = df['hist_item_id'].map(hist_dict)
+
+    df.drop(columns=["hist_1", "hist_2", "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"], inplace=True)
+    df['seq_length'] = 10
+
+    fixlen_feature_columns = []
+    for feat in sparse_features:
+        if feat == 'item_id':
+            fixlen_feature_columns.append(SparseFeat(feat, len(hist_set)))
+        else:
+            fixlen_feature_columns.append(SparseFeat(feat, df[feat].nunique()))
+
+
+    hist_list = ['item_id']
+
+    fixlen_feature_columns += [
+        VarLenSparseFeat(
+            SparseFeat('hist_item_id', vocabulary_size=len(hist_set), embedding_dim=32),
+            maxlen=10, length_name="seq_length")]
+    linear_feature_columns = fixlen_feature_columns
+    dnn_feature_columns = fixlen_feature_columns
+    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+    train, test = train_test_split(df, test_size=0.1)
+    del df
+    train_hist_item = np.array(train['hist_item_id'].values.tolist())
+    test_hist_item = np.array(test['hist_item_id'].values.tolist())
+    train_model_input = {name: train[name] for name in feature_names}
+    train_model_input['hist_item_id'] = train_hist_item
+    test_model_input = {name: test[name] for name in feature_names}
+    test_model_input['hist_item_id'] = test_hist_item
+    return train, test, train_model_input, test_model_input, dnn_feature_columns, hist_list
 
 def ctrdataset(path=None):
     if not path:
@@ -216,7 +362,7 @@ def construct_data(args, item_min):
     for u in user:
         tmp_data2 = df2[df2.user_id == u][:-3].values.tolist()
         if 'cold' in args.task_name:
-            tmp_data1 = df1[df1.user_id == u][-5:].values.tolist()
+            tmp_data1 = df1[df1.user_id == u].values.tolist()
         else:
             if args.task == 1:
                 tmp_data1 = df1[df1.user_id == u][-3:].values.tolist()
@@ -232,19 +378,86 @@ def construct_data(args, item_min):
     t_item_count = len(set(new_data1['item_id']))
     return new_data1, new_data2, user_count, t_item_count, s_item_count
 
-def colddataset(item_min, args, path=None):
+def construct_ch_data(args, item_min):
+    path1 = args.target_path
+    path2 = args.source_path
 
-    target_data, source_data, user_count, t_item_count, s_item_count = construct_data(args, item_min)
+    df1 = pd.read_csv(path1, usecols=['user_id', 'item_id', 'click'])
+    df1 = df1[df1.click.isin([1])]
+    df2 = pd.read_csv(path2, usecols=['user_id', 'item_id', 'click'])
+    df2 = df2[df2.click.isin([1])]
+
+    user_counts = df2.groupby('user_id').size()
+    user_subset = np.in1d(df2.user_id, user_counts[user_counts >= item_min].index)
+    df2 = df2[user_subset].reset_index(drop=True)
+
+    assert (df2.groupby('user_id').size() < item_min).sum() == 0
+    s_item_count = len(set(df2['item_id']))
+    reset_ob = cold_reset_df()
+    df2, df1 = reset_ob.fit_transform(df2, df1)
+
+    user1 = set(df1.user_id.values.tolist())
+    user2 = set(df2.user_id.values.tolist())
+    user = user1 & user2
+    # df = df[:100000]
+    df1 = df1[df1.user_id.isin(list(user))]
+    df2 = df2[df2.user_id.isin(list(user))]
+
+    # cold and hot user
+    user_counts1 = df1.groupby('user_id').size()
+    cold_user_ind = np.in1d(df1.user_id, user_counts1[user_counts1 <= 5].index)
+    hot_user_ind = np.in1d(df1.user_id, user_counts1[user_counts1 > 5].index)
+
+    cold_user = set(df1[cold_user_ind].user_id.values.tolist())
+    hot_user = set(df1[hot_user_ind].user_id.values.tolist())
+
+    new_data1 = []
+    new_data2 = []
+    for u in user:
+        tmp_data2 = df2[df2.user_id == u][:-3].values.tolist()
+        tmp_data1 = df1[df1.user_id == u].values.tolist()
+        new_data1.extend(tmp_data1)
+        new_data2.extend(tmp_data2)
+    new_data1 = pd.DataFrame(new_data1, columns=df1.columns)
+    new_data2 = pd.DataFrame(new_data2, columns=df2.columns)
+    user_count = len(set(new_data1.user_id.values.tolist()))
+    reset_item = item_reset_df()
+    new_data1 = reset_item.fit_transform(new_data1)
+    t_item_count = len(set(new_data1['item_id']))
+    return new_data1, new_data2, user_count, t_item_count, s_item_count, cold_user, hot_user
+
+def colddataset(item_min, args, path=None):
+    if args.ch:
+        target_data, source_data, user_count, t_item_count, s_item_count, cold_user, hot_user = construct_ch_data(args, item_min)
+    else:
+        target_data, source_data, user_count, t_item_count, s_item_count = construct_data(args, item_min)
     print("+++user_history+++")
     user_history = source_data.groupby('user_id').item_id.apply(list).to_dict()
     target = target_data.groupby('user_id').item_id.apply(list).to_dict()
-    examples = []
-    for u, t_list in tqdm(target.items()):
-        for t in t_list:
-            e_list = [user_history[u] + [0], t]
-            examples.append(e_list)
-    examples = pd.DataFrame(examples, columns=['source', 'target'])
-    return examples, user_count, s_item_count, t_item_count
+
+    if args.ch:
+        hot_examples = []
+        cold_examples = []
+        for u, t_list in tqdm(target.items()):
+            if u in cold_user:
+                for t in t_list:
+                    e_list = [user_history[u] + [0], t]
+                    cold_examples.append(e_list)
+            else:
+                for t in t_list:
+                    e_list = [user_history[u] + [0], t]
+                    hot_examples.append(e_list)
+        cold_examples = pd.DataFrame(cold_examples, columns=['source', 'target'])
+        hot_examples = pd.DataFrame(hot_examples, columns=['source', 'target'])
+        return cold_examples, hot_examples, user_count, s_item_count, t_item_count
+    else:
+        examples = []
+        for u, t_list in tqdm(target.items()):
+            for t in t_list:
+                e_list = [user_history[u] + [0], t]
+                examples.append(e_list)
+        examples = pd.DataFrame(examples, columns=['source', 'target'])
+        return examples, user_count, s_item_count, t_item_count
 
 def lifelongdataset(item_min, args, path=None):
     target_data, source_data, user_count, t_item_count, s_item_count = construct_data(args, item_min)

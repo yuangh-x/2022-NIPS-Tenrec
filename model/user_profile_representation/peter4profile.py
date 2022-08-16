@@ -5,9 +5,6 @@ from torch import nn
 from torch.nn import functional as F
 from torch.nn.init import uniform_, xavier_normal_, constant_
 
-# from recbole.model.abstract_recommender import SequentialRecommender
-# from recbole.model.loss import RegLoss, BPRLoss
-
 
 class Peter_ProfileModel(nn.Module):
     r"""The network architecture of the NextItNet model is formed of a stack of holed convolutional layers, which can
@@ -22,30 +19,25 @@ class Peter_ProfileModel(nn.Module):
         In addition, when dilations is not equal to 1, the training may be slow. To  speed up the efficiency, please set the parameters "reproducibility" False.
     """
 
-    def __init__(self, args):  # config, dataset
-        super(Peter_ProfileModel, self).__init__()  # config, dataset
+    def __init__(self, args):
+        super(Peter_ProfileModel, self).__init__()
 
         # load parameters info
-        self.embedding_size = args.embedding_size  # config['embedding_size']
-        self.residual_channels = args.embedding_size  # config['embedding_size']
-        self.block_num = args.block_num  # config['block_num']
-        self.dilations = args.dilations * self.block_num  # config['dilations'] * self.block_num
-        self.kernel_size = args.kernel_size  # config['kernel_size']
-        # if args.is_pretrain == 0:
-        # self.vocab_size = args.num_embedding
-        # else:
+        self.embedding_size = args.embedding_size
+        self.residual_channels = args.embedding_size
+        self.block_num = args.block_num
+        self.dilations = args.dilations * self.block_num
+        self.kernel_size = args.kernel_size
         self.vocab_size = args.num_items
         self.output_dim = args.num_labels
         self.is_mp = args.is_mp
 
         self.pad_token = args.pad_token
-        # self.reg_weight = config['reg_weight']
-        # self.loss_type = config['loss_type']
 
         # define layers and loss
         self.item_embedding = nn.Embedding(self.vocab_size+1, self.embedding_size, padding_idx=self.pad_token)
 
-        # residual blocks    dilations in blocks:[1,2,4,8,1,2,4,8,...]
+        # residual blocks
         rb = [
             ResidualBlock_b_2mp_parallel(
                 self.residual_channels, self.residual_channels, kernel_size=self.kernel_size, dilation=dilation, is_mp=self.is_mp
@@ -56,15 +48,6 @@ class Peter_ProfileModel(nn.Module):
         # fully-connected layer
         self.final_layer = nn.Linear(self.residual_channels, self.output_dim)
 
-        # if self.loss_type == 'BPR':
-        #     self.loss_fct = BPRLoss()
-        # elif self.loss_type == 'CE':
-        #     self.loss_fct = nn.CrossEntropyLoss()
-        # else:
-        #     raise NotImplementedError("Make sure 'loss_type' in ['BPR', 'CE']!")
-        # self.reg_loss = RegLoss()
-
-        # parameters initialization
         # self.apply(self._init_weights)
 
     def _init_weights(self, module):
@@ -80,61 +63,14 @@ class Peter_ProfileModel(nn.Module):
         item_seq_emb = self.item_embedding(item_seq)  # [batch_size, seq_len, embed_size]
         # Residual locks
         dilate_outputs = self.residual_blocks(item_seq_emb)
-        # hidden = dilate_outputs[:, -1, :].view(-1, self.residual_channels)  # [batch_size, embed_size]
         seq_output = self.final_layer(dilate_outputs)  # [batch_size, embedding_size]hidden
         return seq_output
 
-    # def reg_loss_rb(self):
-    #     r"""
-    #     L2 loss on residual blocks
-    #     """
-    #     loss_rb = 0
-    #     if self.reg_weight > 0.0:
-    #         for name, parm in self.residual_blocks.named_parameters():
-    #             if name.endswith('weight'):
-    #                 loss_rb += torch.norm(parm, 2)
-    #     return self.reg_weight * loss_rb
-
-    # def calculate_loss(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     # item_seq_len = interaction[self.ITEM_SEQ_LEN]
-    #     seq_output = self.forward(item_seq)
-    #     pos_items = interaction[self.POS_ITEM_ID]
-    #     if self.loss_type == 'BPR':
-    #         neg_items = interaction[self.NEG_ITEM_ID]
-    #         pos_items_emb = self.item_embedding(pos_items)
-    #         neg_items_emb = self.item_embedding(neg_items)
-    #         pos_score = torch.sum(seq_output * pos_items_emb, dim=-1)  # [B]
-    #         neg_score = torch.sum(seq_output * neg_items_emb, dim=-1)  # [B]
-    #         loss = self.loss_fct(pos_score, neg_score)
-    #     else:  # self.loss_type = 'CE'
-    #         test_item_emb = self.item_embedding.weight
-    #         logits = torch.matmul(seq_output, test_item_emb.transpose(0, 1))
-    #         loss = self.loss_fct(logits, pos_items)
-    #     reg_loss = self.reg_loss([self.item_embedding.weight, self.final_layer.weight])
-    #     loss = loss + self.reg_weight * reg_loss + self.reg_loss_rb()
-    #     return loss
-
-    # def predict(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     test_item = interaction[self.ITEM_ID]
-    #     seq_output = self.forward(item_seq)
-    #     test_item_emb = self.item_embedding(test_item)
-    #     scores = torch.mul(seq_output, test_item_emb).sum(dim=1)
-    #     return scores
-    #
-    # def full_sort_predict(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     # item_seq_len = interaction[self.ITEM_SEQ_LEN]
-    #     seq_output = self.forward(item_seq)
-    #     test_items_emb = self.item_embedding.weight
-    #     scores = torch.matmul(seq_output, test_items_emb.transpose(0, 1))  # [B, item_num]
-    #     return scores
 
 class mp(nn.Module):
-    def __init__(self, channel, cardinality=8):
+    def __init__(self, channel):
         super(mp, self).__init__()
-        self.hidden_size = int(channel / 4)#(cardinality * 4)
+        self.hidden_size = int(channel / 4)#
         self.conv1 = nn.Conv1d(channel, self.hidden_size, 1)
         self.conv2 = nn.Conv1d(self.hidden_size, channel, 1)
 

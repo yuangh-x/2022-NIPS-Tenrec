@@ -4,9 +4,6 @@ import torch
 
 import math
 
-# from models.bert_modules.embedding import BERTEmbedding
-# from models.bert_modules.transformer import TransformerBlock
-# from utils import fix_random_seed_as
 
 class Attention(nn.Module):
     """
@@ -31,7 +28,6 @@ class GELU(nn.Module):
     """
     Paper Section 3.4, last paragraph notice that BERT used the GELU instead of RELU
     """
-
     def forward(self, x):
         return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
 
@@ -62,8 +58,6 @@ class SublayerConnection(nn.Module):
     def forward(self, x, sublayer):
         "Apply residual connection to any sublayer with the same size."
         return x + self.dropout(sublayer(self.norm(x)))
-
-
 
 class MultiHeadedAttention(nn.Module):
     """
@@ -134,12 +128,11 @@ class BERTEmbedding(nn.Module):
         super().__init__()
         self.token = TokenEmbedding(vocab_size=vocab_size, embed_size=embed_size)
         self.position = PositionalEmbedding(max_len=max_len, d_model=embed_size)
-        # self.segment = SegmentEmbedding(embed_size=self.token.embedding_dim)
         self.dropout = nn.Dropout(p=dropout)
         self.embed_size = embed_size
 
     def forward(self, sequence):
-        x = self.token(sequence) + self.position(sequence)  # + self.segment(segment_label)
+        x = self.token(sequence) + self.position(sequence)
         return self.dropout(x)
 
 class TransformerBlock(nn.Module):
@@ -172,9 +165,6 @@ class TransformerBlock(nn.Module):
 class BERT(nn.Module):
     def __init__(self, args):
         super().__init__()
-
-        # fix_random_seed_as(args.model_init_seed)
-        # self.init_weights()
 
         max_len = args.max_len
         num_items = args.num_items
@@ -213,10 +203,6 @@ class BERT_ProfileModel(nn.Module):
         super().__init__()
         self.bert = BERT(args)
         self.out = nn.Linear(self.bert.hidden, args.num_labels)
-
-    # @classmethod
-    # def code(cls):
-    #     return 'bert'
 
     def forward(self, x):
         x = self.bert(x)

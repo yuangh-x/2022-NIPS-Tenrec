@@ -1,9 +1,4 @@
 # -*- coding:utf-8 -*-
-"""
-Author:
-    Weichen Shen,weichenswc@163.com
-"""
-
 from collections import OrderedDict, namedtuple, defaultdict
 from itertools import chain
 
@@ -90,11 +85,6 @@ class DenseFeat(namedtuple('DenseFeat', ['name', 'dimension', 'dtype'])):
 def get_feature_names(feature_columns):
     features = build_input_features(feature_columns)
     return list(features.keys())
-
-
-# def get_inputs_list(inputs):
-#     return list(chain(*list(map(lambda x: x.values(), filter(lambda x: x is not None, inputs)))))
-
 
 def build_input_features(feature_columns):
     # Return OrderedDict: {feature_name:(start, start+dimension)}
