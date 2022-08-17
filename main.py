@@ -275,6 +275,8 @@ if __name__ == "__main__":
     parser.add_argument('--task_num', type=int, default=4)
     parser.add_argument('--dataset_path', type=str, default='')
     parser.add_argument('--pretrain_path', type=str, default='')
+    parser.add_argument('--source_path', type=str, default='')
+    parser.add_argument('--target_path', type=str, default='')
     parser.add_argument('--train_batch_size', type=int, default=32)
     parser.add_argument('--val_batch_size', type=int, default=32)
     parser.add_argument('--test_batch_size', type=int, default=32)
@@ -694,8 +696,8 @@ if __name__ == "__main__":
 
     elif args.task_name == 'cold_start':
         print('=============cold_start=============')
-        args.source_path = '/data/sbr_data_1M.csv'
-        args.target_path = '/data/cold_data.csv'
+        # args.source_path = '/data/sbr_data_1M.csv'
+        # args.target_path = '/data/cold_data.csv'
         train_loader, val_loader, test_loader = get_data(args) #, user_noclick
         if args.is_pretrain == 1:
             print("pretrain")
