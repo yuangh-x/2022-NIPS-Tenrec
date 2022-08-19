@@ -36,3 +36,10 @@ for user in tqdm(set(df['user_id'].values.tolist())):
     # new_df.append(user_df)
 new_df = pd.DataFrame(new_list, columns=df.columns)
 new_df.to_csv('data/cold_data_{}.csv'.format(cold_rate), header=True, index=False)
+
+new_list1 = []
+for user in tqdm(set(df['user_id'].values.tolist())):
+    user_list = df[df['user_id'] == user].iloc[:5, :].values.tolist()
+    new_list1.extend(user_list)
+new_df1 = pd.DataFrame(new_list1, columns=df.columns)
+new_df1.to_csv('data/cold_data.csv', header=True, index=False)
