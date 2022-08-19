@@ -13,10 +13,10 @@ QB-artilce.csv: User article action in QB.
 
 **Download the dataset:**
 
-The Dataset can be downloaded from:
+The raw dataset can be downloaded from:
 https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
 
-The Datasets of each task can be downloaded from:
+The datasets of each task can be downloaded from:
 https://drive.google.com/file/d/1ss7QYHvQtfzOF1E31VrWR-_XkNHz-Jfd/view?usp=sharing
 
 <!--**Download the dataset:**
