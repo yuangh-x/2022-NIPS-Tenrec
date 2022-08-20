@@ -21,6 +21,6 @@ python gen_lifelong.py
 
 Note that: 
 
-Model Inference Speedup Task (Section 3.10):  the  data set (QB- video)  is in the original dataset : https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
+Model Inference Speedup Task (Section 3.10):  the  data set (QB-video)  is in the original dataset : https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
 
-Transfer Learning Task (Section 3.4):  target dataset is also QB- video.
+Transfer Learning Task (Section 3.4):  target dataset is also QB-video.
