@@ -11,7 +11,7 @@ QK-article.csv: User article action in QK.
 
 QB-artilce.csv: User article action in QB.
 
-**Download the dataset:**
+<!--**Download the dataset:**
 
 The raw dataset can be downloaded from:
 https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
@@ -19,7 +19,7 @@ https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=shari
 The datasets of each task can be downloaded from:
 https://drive.google.com/file/d/1ss7QYHvQtfzOF1E31VrWR-_XkNHz-Jfd/view?usp=sharing
 
-<!--**Download the dataset:**
+**Download the dataset:**
 
 The Dataset can be downloaded from:
 https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing-->
