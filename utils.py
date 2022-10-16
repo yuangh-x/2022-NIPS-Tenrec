@@ -4,7 +4,9 @@ import joblib
 import pickle
 import torch.utils.data as data_utils
 import numpy as np
+import scipy.sparse as sp
 import pandas as pd
+from neg_sampler import *
 from pathlib import Path
 from sklearn.metrics import log_loss, roc_auc_score
 from torch.utils.data.distributed import DistributedSampler
@@ -15,10 +17,16 @@ from model.ctr.inputs import *
 
 tqdm.pandas()
 
+def select_sampler(train_data, val_data, test_data, user_count, item_count, args):
+    if args.sample == 'random':
+        return RandomNegativeSampler(train_data, val_data, test_data, user_count, item_count, args.negsample_size, args.seed, args.negsample_savefolder)
+    elif args.sample == 'popular':
+        return PopularNegativeSampler(train_data, val_data, test_data, user_count, item_count, args.negsample_size, args.seed, args.negsample_savefolder)
+
 def mtl_data(path=None, args=None):
     if not path:
         return
-    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "exp", "like", "short_v", "gender", "age", "hist_1", "hist_2",
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "like", "short_v", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
     # df = df[:100000]
     df['short_v'] = df['short_v'].astype(str)
@@ -226,6 +234,184 @@ def ctr_din_dataset(path=None):
     test_model_input = {name: test[name] for name in feature_names}
     test_model_input['hist_item_id'] = test_hist_item
     return train, test, train_model_input, test_model_input, dnn_feature_columns, hist_list
+
+def gen_list(hist):
+    data = []
+    for key, value in tqdm(hist.items()):
+        for v in value:
+            data.append([key, v])
+    return data
+
+def new_cf(args):
+    df = pd.read_csv(args.dataset_path, usecols=['user_id', 'item_id', 'click'])
+    df = df[df.click.isin([1])]
+    user_counts = df.groupby('user_id').size()
+    user_subset = np.in1d(df.user_id, user_counts[user_counts >= args.item_min].index)
+    filter_df = df[user_subset].reset_index(drop=True)
+    del df
+    assert (filter_df.groupby('user_id').size() < args.item_min).sum() == 0
+    user_count = len(set(filter_df['user_id']))
+    item_count = len(set(filter_df['item_id']))
+    # reset_ob = reset_df()
+    filter_df = category_encoding(filter_df)
+    return filter_df, user_count, item_count
+
+def get_ur(df):
+    """
+    Method of getting user-rating pairs
+    Parameters
+    ----------
+    df : pd.DataFrame, rating dataframe
+
+    Returns
+    -------
+    ur : dict, dictionary stored user-items interactions
+    """
+    print("Method of getting user-rating pairs")
+    ur = df.groupby('user_id').item_id.apply(list).to_dict()
+    return ur
+
+def category_encoding(df):
+    df['user_id'] = pd.Categorical(df['user_id']).codes
+    df['item_id'] = pd.Categorical(df['item_id']).codes
+    return df
+
+def gen_hist_matrix(data, user_num, item_num, train_dict):
+    max_len = 0
+    for _, v in train_dict.items():
+        if max_len < len(v):
+            max_len = len(v)
+    if max_len > item_num * 0.2:
+        print(f'Max value of user history interaction records has reached: {max_len / item_num * 100:.4f}% of the total.')
+    history_matrix = np.zeros((user_num+1, max_len), dtype=np.int64)
+    history_value = np.zeros((user_num+1, max_len))
+    history_len = np.zeros(user_num+1, dtype=np.int64)
+
+    for user, item in data:
+        history_matrix[user, history_len[user]] = item
+        history_value[user, history_len[user]] = 1
+        history_len[user] += 1
+    return torch.LongTensor(history_matrix), torch.FloatTensor(history_value), torch.LongTensor(history_len)
+
+
+def get_history_matrix(df, args, row='user_id', use_config_value_name=False):
+    '''
+    get the history interactions by user/item
+    '''
+    # logger = config['logger']
+    assert row in df.columns, f'invalid name {row}: not in columns of history dataframe'
+    # uid_name, iid_name  = config['UID_NAME'], config['IID_NAME']
+    user_ids, item_ids = df['user_id'].values, df['item_id'].values
+    value_name = 'click' if use_config_value_name else None
+
+    user_num, item_num = args.num_users, args.num_items
+    values = np.ones(len(df)) if value_name is None else df[value_name].values
+
+    if row == 'user':
+        row_num, max_col_num = user_num, item_num
+        row_ids, col_ids = user_ids, item_ids
+    else: # 'item'
+        row_num, max_col_num = item_num, user_num
+        row_ids, col_ids = item_ids, user_ids
+
+    history_len = np.zeros(row_num, dtype=np.int16)
+    for row_id in row_ids:
+        history_len[row_id] += 1
+
+    col_num = np.max(history_len)
+    col_num = col_num.astype(int)
+    if col_num > max_col_num * 0.2:
+        print(f'Max value of {row}\'s history interaction records has reached: {col_num / max_col_num * 100:.4f}% of the total.')
+
+    history_matrix = np.zeros((row_num, col_num), dtype=np.int16)
+    history_value = np.zeros((row_num, col_num), dtype=np.int16)
+    history_len[:] = 0
+    for row_id, value, col_id in zip(row_ids, values, col_ids):
+        history_matrix[row_id, history_len[row_id]] = col_id
+        history_value[row_id, history_len[row_id]] = value
+        history_len[row_id] += 1
+
+    return torch.LongTensor(history_matrix), torch.FloatTensor(history_value), torch.LongTensor(history_len)
+
+def get_inter_matrix(df, args, form='coo'):
+    '''
+    get the whole sparse interaction matrix
+    '''
+    print("get the whole sparse interaction matrix")
+    user_num, item_num = args.num_users, args.num_items
+
+    src, tar = df['user_id'].values, df['item_id'].values
+    data = df['click'].values
+
+    mat = sp.coo_matrix((data, (src, tar)), shape=(user_num, item_num))
+
+    if form == 'coo':
+        return mat
+    elif form == 'csr':
+        return mat.tocsr()
+    else:
+        raise NotImplementedError(f'Sparse matrix format [{form}] has not been implemented...')
+
+
+def build_candidates_set(test_ur, train_ur, args, drop_past_inter=True):
+    """
+    method of building candidate items for ranking
+    Parameters
+    ----------
+    test_ur : dict, ground_truth that represents the relationship of user and item in the test set
+    train_ur : dict, this represents the relationship of user and item in the train set
+    item_num : No. of all items
+    cand_num : int, the number of candidates
+    drop_past_inter : drop items already appeared in train set
+
+    Returns
+    -------
+    test_ucands : dict, dictionary storing candidates for each user in test set
+    """
+    item_num = args.num_items
+    candidates_num = args.cand_num
+
+    test_ucands, test_u = [], []
+    for u, r in tqdm(test_ur.items()):
+        sample_num = candidates_num - len(r) if len(r) <= candidates_num else 0
+        if sample_num == 0:
+            samples = np.random.choice(list(r), candidates_num)
+        else:
+            pos_items = list(r) + list(train_ur[u]) if drop_past_inter else list(r)
+            # neg_items = np.setdiff1d(np.arange(item_num), pos_items)
+            # samples = np.random.choice(neg_items, size=sample_num)
+            samples = []
+            for _ in range(sample_num):
+                item = np.random.choice(item_num)
+                while item in pos_items or item in samples:
+                    item = np.random.choice(item_num)
+                samples.append(item)
+            samples = np.array(samples)
+            samples = np.concatenate((samples, list(r)), axis=None)
+
+        test_ucands.append([u, samples])
+        test_u.append(u)
+
+    return test_u, test_ucands
+
+class BasicDataset(data_utils.Dataset):
+    def __init__(self, samples):
+        '''
+        convert array-like <u, i, j> / <u, i, r> / <target_i, context_i, label>
+
+        Parameters
+        ----------
+        samples : np.array
+            samples generated by sampler
+        '''
+        super(BasicDataset, self).__init__()
+        self.data = samples
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index][0], self.data[index][1], self.data[index][2]
 
 def ctrdataset(path=None):
     if not path:
@@ -807,6 +993,51 @@ class pos_neg_TrainDataset(data_utils.Dataset):
     def _getseq(self, user):
         return self.u2seq[user]
 
+class CFData(data_utils.Dataset):
+    def __init__(self, features,
+            num_item, train_dict, num_ng=0, is_training=None):
+        """ Note that the labels are only useful when training, we thus
+            add them in the ng_sample() function.
+        """
+        self.features_ps = features
+        self.num_item = num_item
+        self.train_dict = train_dict
+        self.num_ng = num_ng
+        self.is_training = is_training
+        self.labels = [0 for _ in range(len(features))]
+
+    def ng_sample(self):
+        assert self.is_training, 'no need to sampling when testing'
+
+        self.features_ng = []
+        for x, value in self.train_dict.items():
+            u = x
+            for t in range(self.num_ng * len(value)):
+                j = np.random.randint(1, self.num_item)
+                while j in value:
+                    j = np.random.randint(1, self.num_item)
+                self.features_ng.append([u, j])
+
+        labels_ps = [1 for _ in range(len(self.features_ps))]
+        labels_ng = [0 for _ in range(len(self.features_ng))]
+
+        self.features_fill = self.features_ps + self.features_ng
+        self.labels_fill = labels_ps + labels_ng
+
+    def __len__(self):
+        return (self.num_ng + 1) * len(self.labels)
+
+    def __getitem__(self, idx):
+        features = self.features_fill if self.is_training \
+                    else self.features_ps
+        labels = self.labels_fill if self.is_training \
+                    else self.labels
+
+        user = features[idx][0]
+        item = features[idx][1]
+        label = labels[idx]
+        return user, item, label
+
 class BertTrainDataset(data_utils.Dataset):
     def __init__(self, u2seq, max_len, mask_prob, mask_token, num_items, rng):
         self.u2seq = u2seq
@@ -963,6 +1194,74 @@ class new_Build_full_EvalDataset(data_utils.Dataset):
         seq = [self.mask_token] * padding_len + seq
 
         return torch.LongTensor(seq), torch.LongTensor(labels)
+
+class AEDataset(data_utils.Dataset):
+    def __init__(self, train_set, yield_col='user_id'):
+        """
+        covert user in train_set to array-like <u> / <i> for AutoEncoder-like algorithms
+        Parameters
+        ----------
+        train_set : pd.DataFrame
+            training set
+        yield_col : string
+            column name used to generate array
+        """
+        super(AEDataset, self).__init__()
+        self.data = list(train_set[yield_col].unique())
+        self.data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+class VAEDataset(data_utils.Dataset):
+    def __init__(self, train_set):
+        """
+        covert user in train_set to array-like <u> / <i> for AutoEncoder-like algorithms
+        Parameters
+        ----------
+        train_set : pd.DataFrame
+            training set
+        yield_col : string
+            column name used to generate array
+        """
+        super(VAEDataset, self).__init__()
+        self.data = train_set
+        self.data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+
+class Cf_valDataset(data_utils.Dataset):
+    def __init__(self, data):
+        super(Cf_valDataset, self).__init__()
+        self.user = data
+        # self.data = data
+
+    def __len__(self):
+        return len(self.user)
+
+    def __getitem__(self, index):
+        user = self.user[index]
+        return torch.tensor(user)#, torch.tensor(self.data[user])
+
+
+class CandidatesDataset(data_utils.Dataset):
+    def __init__(self, ucands):
+        super(CandidatesDataset, self).__init__()
+        self.data = ucands
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return torch.tensor(self.data[index][0]), torch.tensor(self.data[index][1])
 
 def get_train_loader(dataset, args):
     if args.is_parallel:

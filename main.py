@@ -6,6 +6,7 @@ from utils import *
 from trainer import *
 from neg_sampler import *
 from load_model import *
+from splitter import *
 from torch.utils.tensorboard import SummaryWriter
 from sklearn.model_selection import train_test_split
 from model.sequence_model.bert4rec import BERTModel
@@ -39,8 +40,14 @@ from model.coldstart.bert4coldstart import BERT_ColdstartModel
 from model.coldstart.peter4coldstart import Peter4Coldstart
 from model.model_accelerate.sas4acc import SAS4accModel
 from model.model_compression.sas4cp import SAS4cpModel
+from model.cf.ncf import NCF
+from model.cf.mf import MF
+from model.cf.lightgcn import LightGCN
+from model.cf.ngcf import NGCF
+from model.cf.vae import VAECF
+from model.cf.item2vec import Item2Vec
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 def select_sampler(train_data, val_data, test_data, user_count, item_count, args):
     if args.sample == 'random':
@@ -87,6 +94,52 @@ def get_data(args):
             args.test_batch_size = 1
         test_dataloader = get_test_loader(test_dataset, args)
         return train_dataloader, valid_dataloader, test_dataloader
+    elif name == 'cf':
+        df, user_count, item_count = new_cf(args)
+        args.num_users = user_count
+        args.num_items = item_count
+        t_splitter = TestSplitter(args)
+        train_index, test_index = t_splitter.split(df)
+        print("split train and test")
+        train_set, test_set = df.iloc[train_index, :].copy(), df.iloc[test_index, :].copy()
+        v_splitter = ValidationSplitter(args)
+        train_index, val_index = v_splitter.split(train_set)
+        print("split train and val")
+        train, validation = train_set.iloc[train_index, :].copy(), train_set.iloc[val_index, :].copy()
+        val_ur = get_ur(validation)
+        train_ur = get_ur(train)
+        test_ur = get_ur(test_set)
+        args.train_ur = train_ur
+        args.val_ur = val_ur
+        args.test_ur = test_ur
+        val_u = sorted(val_ur.keys())
+        args.val_u = val_u
+        test_u = sorted(test_ur.keys())
+        args.test_u = test_u
+        if args.model_name in ['vae']:
+            hist_item_id, hist_item_value, _ = get_history_matrix(train, args, row='user_id')
+            args.history_item_id, args.history_item_value = hist_item_id, hist_item_value
+            train_dataset = AEDataset(train)
+            train_loader = get_train_loader(train_dataset, args)
+        elif args.model_name in ['mf', 'ncf', 'ngcf', 'lightgcn']:
+            if args.model_name in ['ngcf', 'lightgcn']:
+                args.inter_matrix = get_inter_matrix(train, args)
+            sampler = BasicNegtiveSampler(train, args)
+            train_samples = sampler.sampling()
+            train_dataset = BasicDataset(train_samples)
+            train_loader = get_train_loader(train_dataset, args)
+        elif args.model_name in ['item2vec']:
+            sampler = SkipGramNegativeSampler(train, args)
+            train_samples = sampler.sampling()
+            train_dataset = BasicDataset(train_samples)
+            train_loader = get_train_loader(train_dataset, args)
+
+        val_dataset = Cf_valDataset(val_u)
+        val_loader = get_val_loader(val_dataset, args)
+        test_dataset = Cf_valDataset(test_u)
+        test_loader = get_test_loader(test_dataset, args)
+        return train_loader, val_loader, test_loader
+
     elif name == 'cold_start':
         if args.ch:
             print("hot & cold")
@@ -254,47 +307,62 @@ def get_model(args, linear_feature_columns=None, dnn_feature_columns=None, histo
         return SAS4accModel(args)
     elif name == 'sas4cp':
         return SAS4cpModel(args)
-
+    elif name == 'ncf':
+        return NCF(args)
+    elif name == 'mf':
+        return MF(args)
+    elif name == 'lightgcn':
+        return LightGCN(args)
+    elif name == 'ngcf':
+        return NGCF(args)
+    elif name == 'vae':
+        return VAECF(args)
+    elif name == 'item2vec':
+        return Item2Vec(args)
     else:
         raise ValueError('unknown model name: ' + name)
 
-def set_seed(seed):
-	random.seed(seed)
-	os.environ['PYTHONHASHSEED'] = str(seed)
-	np.random.seed(seed)
-	torch.manual_seed(seed)
-	torch.cuda.manual_seed(seed)
-	torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
-	torch.backends.cudnn.benchmark = False
-	torch.backends.cudnn.deterministic = True
+def set_seed(seed, re=True):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
+    if re:
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+    else:
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.deterministic = False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--task_name', default='')
+    parser.add_argument('--task_name', default='cf')
     parser.add_argument('--task_num', type=int, default=4)
-    parser.add_argument('--dataset_path', type=str, default='')
+    parser.add_argument('--dataset_path', type=str, default='/home/ygh/Tenrec_Benchmark/data/QB-video.csv')
     parser.add_argument('--pretrain_path', type=str, default='')
     parser.add_argument('--source_path', type=str, default='')
     parser.add_argument('--target_path', type=str, default='')
-    parser.add_argument('--train_batch_size', type=int, default=32)
-    parser.add_argument('--val_batch_size', type=int, default=32)
-    parser.add_argument('--test_batch_size', type=int, default=32)
+    parser.add_argument('--train_batch_size', type=int, default=40000)
+    parser.add_argument('--val_batch_size', type=int, default=1024)
+    parser.add_argument('--test_batch_size', type=int, default=1024)
     parser.add_argument('--sample', type=str, default='random')
-    parser.add_argument('--negsample_savefolder', type=str, default='/data/neg_data/')
-    parser.add_argument('--negsample_size', type=int, default=1000)
-    parser.add_argument('--max_len', type=int, default=30)
+    parser.add_argument('--negsample_savefolder', type=str, default='./data/neg_data/')
+    parser.add_argument('--negsample_size', type=int, default=99)
+    parser.add_argument('--max_len', type=int, default=20)
     parser.add_argument('--item_min', type=int, default=10)
-    parser.add_argument('--save_path', type=str, default='checkpoint')
+    parser.add_argument('--save_path', type=str, default='./checkpoint/')
     # parser.add_argument('--save_path', type=str, default='/data/home')
     parser.add_argument('--task', type=int, default=-1)
     parser.add_argument('--valid_rate', type=int, default=100)
 
-    parser.add_argument('--model_name', default='')
+    parser.add_argument('--model_name', default='ngcf')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--re_epochs', type=int, default=20)
 
-    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--lr', type=float, default=0.0005)
 
     parser.add_argument('--device', default='cuda')  # cuda:0
     parser.add_argument('--is_parallel', type=bool, default=False)
@@ -307,20 +375,20 @@ if __name__ == "__main__":
     parser.add_argument('--num_items', type=int, default=1, help='Number of total items')
     parser.add_argument('--num_embedding', type=int, default=1, help='Number of total source items')
     parser.add_argument('--num_labels', type=int, default=1, help='Number of total labels')
-    parser.add_argument('--k', type=int, default=5, help='The number of items to measure the hit@k metric (i.e. hit@10 to see if the correct item is within the top 10 scores)')
+    parser.add_argument('--k', type=int, default=20, help='The number of items to measure the hit@k metric (i.e. hit@10 to see if the correct item is within the top 10 scores)')
     parser.add_argument('--metric_ks', nargs='+', type=int, default=[5, 20], help='ks for Metric@k')
     parser.add_argument('--best_metric', type=str, default='NDCG@10', help='Metric for determining the best model')
 
     #model param
     parser.add_argument('--hidden_size', type=int, default=128, help='Size of hidden vectors (model)')
-    parser.add_argument('--block_num', type=int, default=16, help='Number of transformer layers')
+    parser.add_argument('--block_num', type=int, default=2, help='Number of transformer layers')
     parser.add_argument('--num_groups', type=int, default=4, help='Number of transformer groups')
     parser.add_argument('--num_heads', type=int, default=4, help='Number of heads for multi-attention')
-    parser.add_argument('--dropout', type=float, default=0.1,
+    parser.add_argument('--dropout', type=float, default=0.3,
                         help='Dropout probability to use throughout the model')
     parser.add_argument('--bert_mask_prob', type=float, default=0.3,
                         help='Probability for masking items in the training sequence')
-
+    parser.add_argument('--factor_num', type=int, default=128)
     #Nextitnet
     parser.add_argument('--embedding_size', type=int, default=128, help='embedding_size for model')
     parser.add_argument('--dilations', type=int, default=[1, 4], help='Number of transformer layers')
@@ -334,6 +402,46 @@ if __name__ == "__main__":
     #mtl
     parser.add_argument('--mtl_task_num', type=int, default=1, help='0:like, 1:click, 2:two tasks')
 
+    #CF
+    parser.add_argument('--test_method', default='ufo', type=str)
+    parser.add_argument('--val_method', default='ufo', type=str)
+    parser.add_argument('--test_size', default=0.1, type=float)
+    parser.add_argument('--val_size', default=0.1111, type=float)
+    parser.add_argument('--cand_num', default=100, type=int)
+    parser.add_argument('--sample_method', default='high-pop', type=str) #
+    # parser.add_argument('--sample_method', default='uniform', type=str)
+    parser.add_argument('--sample_ratio', default=0.3, type=float)
+    parser.add_argument('--num_ng', default=4, type=int)
+    parser.add_argument('--loss_type', default='BPR', type=str)
+    parser.add_argument('--init_method', default='default', type=str)
+    parser.add_argument('--optimizer', default='default', type=str)
+    parser.add_argument('--early_stop', default=True, type=bool)
+    parser.add_argument('--reg_1', default=0.0, type=float)
+    parser.add_argument('--reg_2', default=0.0, type=float)
+    parser.add_argument('--context_window', default=2, type=int)
+    parser.add_argument('--rho', default=0.5, type=float)
+
+    #ngcf
+    parser.add_argument('--node_dropout', default=0.1,
+                        type=float,
+                        help='NGCF: Keep probability w.r.t. node dropout (i.e., 1-dropout_ratio) for each deep layer. 1: no dropout.')
+    parser.add_argument('--mess_dropout', default=0.1,
+                        type=float,
+                        help='NGCF: Keep probability w.r.t. message dropout (i.e., 1-dropout_ratio) for each deep layer. 1: no dropout.')
+    parser.add_argument('--hidden_size_list', default=[128, 128], type=list)
+
+    #vae
+    parser.add_argument('--latent_dim',
+                        type=int,
+                        default=128,
+                        help='bottleneck layer size for autoencoder')
+    parser.add_argument('--anneal_cap',
+                        type=float,
+                        default=0.2,
+                        help='Anneal penalty for VAE KL loss')
+    parser.add_argument('--total_anneal_steps',
+                        type=int,
+                        default=1000)
     #model_KD
     parser.add_argument('--kd', type=bool, default=False, help='True: Knowledge distilling, False: Cprec')
     parser.add_argument('--alpha', default=0.4, type=float)
@@ -365,8 +473,8 @@ if __name__ == "__main__":
         torch.distributed.init_process_group(backend="nccl")
         torch.cuda.set_device(args.local_rank)
     device = torch.device(args.device)
-    if 'bert' in args.model_name:
-        set_seed(args.seed)
+    # if 'bert' in args.model_name:
+    set_seed(args.seed)
     writer = SummaryWriter()
     print(args)
     if args.task_name == 'ctr':
@@ -744,6 +852,33 @@ if __name__ == "__main__":
             model.load_state_dict(best_weight)
             model = model.to(args.device)
             metrics = Sequence_full_Validate(0, model, test_loader, writer, args)
+    elif args.task_name == 'cf':
+        metrics_config = {
+            "recall": Recall,
+            "mrr": MRR,
+            "ndcg": NDCG,
+            "hr": HR,
+            "map": MAP,
+            "precision": Precision,
+        }
+        print('=============cf=============')
+        train_loader, val_loader, test_loader = get_data(args) #, user_noclick
+        model = get_model(args)
+        model.fit(train_loader, val_loader)
+        #test
+        model = get_model(args)
+        print("model:", args.model_name, "neg_sample_method:", args.sample_method)
+        best_weight = torch.load(os.path.join(args.save_path,
+                                                    '{}_{}_seed{}_best_model_lr{}_fn{}_block{}_neg{}.pth'.format(
+                                                        args.task_name, args.model_name, args.seed, args.lr,
+                                                        args.factor_num, args.block_num, args.sample_method)))
+        model.load_state_dict(best_weight)
+        model = model.to(args.device)
+        preds = model.rank(test_loader)
+        ndcg = NDCG(args.test_ur, preds, args.test_u)
+        recall = Recall(args.test_ur, preds, args.test_u)
+        print("Test", "NDCG@{}:".format(args.k), ndcg, "Recall@{}:".format(args.k), recall)
+
 
 
 
