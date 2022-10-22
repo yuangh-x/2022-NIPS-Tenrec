@@ -81,7 +81,7 @@ def set_fenbu(row_data):
 
 def sample_data(df):
     p_df = df[df.click.isin([1])]
-    n_df = df[df.click.isin([0]) & df.exp.isin([1])]
+    n_df = df[df.click.isin([0])]
     del df
     n_df = n_df.sample(n=len(p_df)*2)
     df = p_df.append(n_df)
@@ -416,7 +416,7 @@ class BasicDataset(data_utils.Dataset):
 def ctrdataset(path=None):
     if not path:
         return
-    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "exp", "short_v", "gender", "age", "hist_1", "hist_2",
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "short_v", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
     df['short_v'] = df['short_v'].astype(str)
     df = sample_data(df)
