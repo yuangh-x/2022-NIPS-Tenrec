@@ -11,6 +11,11 @@ QK-article.csv: User article action in QK.
 
 QB-artilce.csv: User article action in QB.
 
+**Download the dataset:**
+
+See our openreview link (our formal website for this dataset is being constructing): 
+[https://openreview.net/forumid=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions)](https://openreview.net/forum?id=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions))
+
 <!--**Download the dataset:**
 
 The raw dataset can be downloaded from:
@@ -299,7 +304,49 @@ python main.py --task_name=inference_acc --seed=5 --model_name=sas4infacc --data
 ```
 Skiprec
 ```
-python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_path='data/QB-video.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=1 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
+python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_path='data/QB-video.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=1 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1 
+```
+
+#### Top-N
+
+MF-random_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=mf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='uniform' --num_ng=4 --loss_type='BPR' 
+```
+
+MF-popularity_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=mf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='high-pop' --sample_ratio=0.3 --num_ng=4 --loss_type='BPR' 
+```
+
+NCF-random_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=ncf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.000001 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='uniform' --num_ng=4 --loss_type='BPR' 
+```
+
+NCF-popularity_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=ncf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.000001 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='high-pop' --sample_ratio=0.3 --num_ng=4 --loss_type='BPR' 
+```
+
+NGCF-random_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=ngcf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='uniform' --num_ng=4 --loss_type='BPR' --node_dropout=0.1 --mess_dropout=0.1 --hidden_size_list=[128, 128]
+```
+
+NGCF-popularity_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=ngcf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='high-pop' --sample_ratio=0.3 --num_ng=4 --loss_type='BPR' --node_dropout=0.1 --mess_dropout=0.1 --hidden_size_list=[128, 128]
+```
+
+LightGCN-random_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=lightgcn --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='uniform' --num_ng=4 --loss_type='BPR' 
+```
+
+LightGCN-popularity_sampler
+```
+python main.py --task_name=cf --seed=0 --model_name=lightgcn --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='high-pop' --sample_ratio=0.3 --num_ng=4 --loss_type='BPR' 
 ```
 
 #### Environments
