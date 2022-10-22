@@ -41,7 +41,7 @@ with open(path, 'r', newline='') as file:
 
 path = '/data/ctr_task/QK_video1M.csv'
 source_data = pd.read_csv(path)
-source_data.columns = ['user_id', 'item_id', 'click', 'exp', 'follow', 'like', 'share', 'short_v', 'play_times', 'gender', 'age']
+source_data.columns = ['user_id', 'item_id', 'click', 'follow', 'like', 'share', 'short_v', 'play_times', 'gender', 'age']
 pos_data = source_data[source_data.click.isin([1])]
 user_history = pos_data.groupby('user_id').item_id.apply(list).to_dict()
 del pos_data
