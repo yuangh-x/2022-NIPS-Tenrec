@@ -26,22 +26,22 @@ def select_sampler(train_data, val_data, test_data, user_count, item_count, args
 def mtl_data(path=None, args=None):
     if not path:
         return
-    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "like", "short_v", "gender", "age", "hist_1", "hist_2",
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "like", "video_category", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
     # df = df[:100000]
-    df['short_v'] = df['short_v'].astype(str)
+    df['video_category'] = df['video_category'].astype(str)
     df = sample_data(df)
     if args.mtl_task_num == 2:
         label_columns = ['click', 'like']
-        categorical_columns = ["user_id", "item_id", "short_v", "gender", "age", "hist_1", "hist_2",
+        categorical_columns = ["user_id", "item_id", "video_category", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
     elif args.mtl_task_num == 1:
         label_columns = ['click']
-        categorical_columns = ["user_id", "item_id", "short_v", "gender", "age", "hist_1", "hist_2",
+        categorical_columns = ["user_id", "item_id", "video_category", "gender", "age", "hist_1", "hist_2",
                                "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
     else:
         label_columns = ['like']
-        categorical_columns = ["user_id", "item_id", "short_v", "gender", "age", "hist_1", "hist_2",
+        categorical_columns = ["user_id", "item_id", "video_category", "gender", "age", "hist_1", "hist_2",
                                "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
     user_columns = ["user_id", "gender", "age"]
     for col in tqdm(categorical_columns):
