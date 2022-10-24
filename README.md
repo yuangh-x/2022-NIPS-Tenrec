@@ -33,7 +33,7 @@ https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=shari
 
 We apply Tenrec on 10 recommendation tasks. Please run the commands as below to test the performance of each task.
 
-#### CTR:
+#### CTR(including shared embedding and separate embedding, see paper appendix):
 
 AFM
 ```
