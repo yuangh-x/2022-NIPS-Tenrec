@@ -416,11 +416,11 @@ class BasicDataset(data_utils.Dataset):
 def ctrdataset(path=None):
     if not path:
         return
-    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "short_v", "gender", "age", "hist_1", "hist_2",
+    df = pd.read_csv(path, usecols=["user_id", "item_id", "click", "video_category", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"])
-    df['short_v'] = df['short_v'].astype(str)
+    df['video_category'] = df['video_category'].astype(str)
     df = sample_data(df)
-    sparse_features = ["user_id", "item_id", "short_v", "gender", "age", "hist_1", "hist_2",
+    sparse_features = ["user_id", "item_id", "video_category", "gender", "age", "hist_1", "hist_2",
                        "hist_3", "hist_4", "hist_5", "hist_6", "hist_7", "hist_8", "hist_9", "hist_10"]
 
     lbe = LabelEncoder()

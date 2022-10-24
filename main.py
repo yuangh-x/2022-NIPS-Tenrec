@@ -66,7 +66,7 @@ def get_data(args):
         else:
             train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(args, path)
             #share historical embedding
-            # train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(args, path)
+            # train, test, train_model_input, test_model_input, lf_columns, df_columns = ctr_share_dataset(args, path)
             return train, test, train_model_input, test_model_input, lf_columns, df_columns
     elif name == 'sequence' or name == 'transfer_learning' or name == 'model_acc' or name == 'model_compr' or name == 'inference_acc' or name == 'eval':
         _, data, user_count, item_count = sequencedataset(args.item_min, args, path)
@@ -339,13 +339,13 @@ def set_seed(seed, re=True):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--task_name', default='cf')
+    parser.add_argument('--task_name', default='')
     parser.add_argument('--task_num', type=int, default=4)
-    parser.add_argument('--dataset_path', type=str, default='/home/ygh/Tenrec_Benchmark/data/QB-video.csv')
+    parser.add_argument('--dataset_path', type=str, default='')
     parser.add_argument('--pretrain_path', type=str, default='')
     parser.add_argument('--source_path', type=str, default='')
     parser.add_argument('--target_path', type=str, default='')
-    parser.add_argument('--train_batch_size', type=int, default=40000)
+    parser.add_argument('--train_batch_size', type=int, default=1024)
     parser.add_argument('--val_batch_size', type=int, default=1024)
     parser.add_argument('--test_batch_size', type=int, default=1024)
     parser.add_argument('--sample', type=str, default='random')
@@ -358,7 +358,7 @@ if __name__ == "__main__":
     parser.add_argument('--task', type=int, default=-1)
     parser.add_argument('--valid_rate', type=int, default=100)
 
-    parser.add_argument('--model_name', default='ngcf')
+    parser.add_argument('--model_name', default='')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--re_epochs', type=int, default=20)
 
@@ -484,7 +484,7 @@ if __name__ == "__main__":
         else:
             train, test, train_model_input, test_model_input, lf_columns, df_columns = get_data(args)
             model = get_model(args, linear_feature_columns=lf_columns, dnn_feature_columns=df_columns, history_feature_list=None)
-        model = get_model(args, lf_columns, df_columns)
+        # model = get_model(args, lf_columns, df_columns)
         model.compile(args, "adam", "binary_crossentropy",
                       metrics=["auc", "acc"])
         history, best_model = model.fit(train_model_input, train['click'].values, batch_size=args.train_batch_size, epochs=args.epochs, verbose=2,
