@@ -309,6 +309,8 @@ python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_p
 
 #### Top-N
 
+There are more tasks (e.g., Top-N recommendation), settings and results (including original large datasets) present in our paper appendix (see openreview).
+
 MF-random_sampler
 ```
 python main.py --task_name=cf --seed=0 --model_name=mf --dataset_path='data/QB-video.csv' --train_batch_size=4096 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.005 --factor=128 --block_num=2 --test_method='ufo' --val_method='ufo' --test_size=0.1 --val_size=0.1111 --sample_method='uniform' --num_ng=4 --loss_type='BPR' 
