@@ -31,7 +31,7 @@ https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=shari
 
 ### Benchmark
 
-We apply Tenrec on 10 recommendation tasks. Please run the commands as below to test the performance of each task.
+We apply Tenrec on 10 recommendation tasks. **There are more tasks (e.g., Top-N recommendation), settings and results (including original large datasets) present in our paper appendix (see openreview).** Please run the commands as below to test the performance of each task.
 
 #### CTR (including shared embedding and separate embedding, see paper appendix):
 
@@ -308,8 +308,6 @@ python main.py --task_name=inference_acc --seed=5 --model_name=cprec --dataset_p
 ```
 
 #### Top-N
-
-There are more tasks (e.g., Top-N recommendation), settings and results (including original large datasets) present in our paper appendix (see openreview).
 
 MF-random_sampler
 ```
