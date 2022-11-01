@@ -44,8 +44,8 @@ from model.cf.ncf import NCF
 from model.cf.mf import MF
 from model.cf.lightgcn import LightGCN
 from model.cf.ngcf import NGCF
-from model.cf.vae import VAECF
-from model.cf.item2vec import Item2Vec
+# from model.cf.vae import VAECF
+# from model.cf.item2vec import Item2Vec
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
@@ -315,10 +315,10 @@ def get_model(args, linear_feature_columns=None, dnn_feature_columns=None, histo
         return LightGCN(args)
     elif name == 'ngcf':
         return NGCF(args)
-    elif name == 'vae':
-        return VAECF(args)
-    elif name == 'item2vec':
-        return Item2Vec(args)
+    # elif name == 'vae':
+    #     return VAECF(args)
+    # elif name == 'item2vec':
+    #     return Item2Vec(args)
     else:
         raise ValueError('unknown model name: ' + name)
 
