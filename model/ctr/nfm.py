@@ -4,7 +4,9 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import DNN, BiInteractionPooling
+# from .layers import DNN, BiInteractionPooling
+from .layers.core import DNN
+from .layers.interaction import BiInteractionPooling
 
 
 class NFM(BaseModel):

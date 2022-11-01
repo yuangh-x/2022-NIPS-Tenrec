@@ -4,7 +4,8 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import DNN, CIN
+from .layers.core import DNN
+from .layers.interaction import CIN
 
 
 class xDeepFM(BaseModel):

@@ -4,8 +4,8 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import CrossNet, DNN
-
+from .layers.interaction import CrossNet
+from .layers.core import DNN
 
 class DCN(BaseModel):
     """Instantiates the Deep&Cross Network architecture. Including DCN-V (parameterization='vector')

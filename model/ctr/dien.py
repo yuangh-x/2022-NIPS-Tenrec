@@ -2,7 +2,10 @@
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 from .basemodel import BaseModel
-from .layers import *
+from .layers.core import DNN
+from .layers.sequence import AttentionSequencePoolingLayer, DynamicGRU
+# from .layers import *
+import torch.nn.functional as F
 from .inputs import *
 
 

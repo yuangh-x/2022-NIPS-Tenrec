@@ -4,7 +4,7 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import DNN
+from .layers.core import DNN
 
 class WDL(BaseModel):
     """Instantiates the Wide&Deep Learning architecture.

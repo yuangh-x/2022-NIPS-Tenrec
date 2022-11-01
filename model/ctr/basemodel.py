@@ -18,7 +18,7 @@ except ImportError:
 
 from .inputs import build_input_features, SparseFeat, DenseFeat, VarLenSparseFeat, get_varlen_pooling_list, \
     create_embedding_matrix, varlen_embedding_lookup
-from .layers import PredictionLayer
+from .layers.core import PredictionLayer
 from .layers.utils import slice_arrays
 from .callbacks import History
 

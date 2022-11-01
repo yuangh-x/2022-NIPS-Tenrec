@@ -4,8 +4,9 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import FM, DNN
-
+# from .layers import FM, DNN
+from .layers.interaction import FM
+from .layers.core import DNN
 
 class DeepFM(BaseModel):
     """Instantiates the DeepFM Network architecture.

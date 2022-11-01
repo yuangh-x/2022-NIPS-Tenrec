@@ -2,7 +2,7 @@
 
 from .basemodel import BaseModel
 from .inputs import *
-from .layers import *
+from .layers.core import DNN
 from .layers.sequence import AttentionSequencePoolingLayer
 
 

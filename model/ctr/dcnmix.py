@@ -3,7 +3,9 @@ import torch.nn as nn
 
 from .basemodel import BaseModel
 from .inputs import combined_dnn_input
-from .layers import CrossNetMix, DNN
+# from .layers import CrossNetMix, DNN
+from .layers.interaction import CrossNetMix
+from .layers.core import DNN
 
 
 class DCNMix(BaseModel):
