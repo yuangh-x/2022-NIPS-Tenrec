@@ -339,7 +339,7 @@ def set_seed(seed, re=True):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--task_name', default='ctr')
+    parser.add_argument('--task_name', default='')
     parser.add_argument('--task_num', type=int, default=4)
     parser.add_argument('--dataset_path', type=str, default='')
     parser.add_argument('--pretrain_path', type=str, default='')
@@ -358,7 +358,7 @@ if __name__ == "__main__":
     parser.add_argument('--task', type=int, default=-1)
     parser.add_argument('--valid_rate', type=int, default=100)
 
-    parser.add_argument('--model_name', default='deepfm')
+    parser.add_argument('--model_name', default='')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--re_epochs', type=int, default=20)
 
