@@ -61,10 +61,10 @@ def get_data(args):
     rng = random.Random(args.seed)
     if name == 'ctr':
         if args.model_name == 'din' or args.model_name == 'dien':
-            train, test, train_model_input, test_model_input, df_columns, hist_list = ctr_din_dataset(args, path)
+            train, test, train_model_input, test_model_input, df_columns, hist_list = ctr_din_dataset(path)
             return train, test, train_model_input, test_model_input, df_columns, hist_list
         else:
-            train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(args, path)
+            train, test, train_model_input, test_model_input, lf_columns, df_columns = ctrdataset(path)
             #share historical embedding
             # train, test, train_model_input, test_model_input, lf_columns, df_columns = ctr_share_dataset(args, path)
             return train, test, train_model_input, test_model_input, lf_columns, df_columns
@@ -339,7 +339,7 @@ def set_seed(seed, re=True):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--task_name', default='')
+    parser.add_argument('--task_name', default='ctr')
     parser.add_argument('--task_num', type=int, default=4)
     parser.add_argument('--dataset_path', type=str, default='')
     parser.add_argument('--pretrain_path', type=str, default='')
@@ -358,7 +358,7 @@ if __name__ == "__main__":
     parser.add_argument('--task', type=int, default=-1)
     parser.add_argument('--valid_rate', type=int, default=100)
 
-    parser.add_argument('--model_name', default='')
+    parser.add_argument('--model_name', default='deepfm')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--re_epochs', type=int, default=20)
 
