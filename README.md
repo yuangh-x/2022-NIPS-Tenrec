@@ -364,6 +364,8 @@ sklearn 0.24.2
 
 python 3.6.8
 
+Some CTR and SBR tasks codes are referenced from deepctr and recbole.
+
 **License:**
 
 This dataset is licensed under a CC BY-NC 4.0 International License(https://creativecommons.org/licenses/by-nc/4.0/).
