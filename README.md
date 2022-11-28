@@ -16,7 +16,7 @@ QB-artilce.csv: User article action in QB.
 See our openreview link (our formal website for this dataset is being constructing): 
 [https://openreview.net/forumid=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions)](https://openreview.net/forum?id=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions))
 
-**Dataset is updating.**
+Dataset is updated.
 
 <!--**Please check you web setting if you cannot access the official download link. (It should be okay since we have tested many VPN settings.)**
 
