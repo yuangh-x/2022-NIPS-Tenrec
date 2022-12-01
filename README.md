@@ -13,14 +13,16 @@ QB-artilce.csv: User article action in QB.
 
 **Download the dataset:**
 
-See our openreview link (our formal website for this dataset is being constructing): 
+Dataset link: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.html
+
+<!--See our openreview link (our formal website for this dataset is being constructing): 
 [https://openreview.net/forumid=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions)](https://openreview.net/forum?id=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions))
 
-Dataset is updated.
+Dataset is updated.--!>
 
-<!--**Please check you web setting if you cannot access the official download link. (It should be okay since we have tested many VPN settings.)**
+Please check you web setting if you cannot access the official download link. (It should be okay since we have tested many VPN settings.)
 
-**You should have a registration in our official download website, wherever you got the dataset and planned to use it for your publication.**--!>
+**You should download the dataset from our official download website and agree to the usage agreement, wherever you got the dataset and planned to use it for your publication.**
 
 <!--**Download the dataset:**
 
