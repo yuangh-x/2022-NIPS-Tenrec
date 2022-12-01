@@ -20,9 +20,8 @@ Dataset link: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.ht
 
 Dataset is updated.--!>
 
-Please check you web setting if you cannot access the official download link. (It should be okay since we have tested many VPN settings.)
-
-**You should download the dataset from our official download website and agree to the usage agreement, wherever you got the dataset and planned to use it for your publication.**
+Please check your web setting if you cannot access the official download link. (It should be fine since we have tested many VPN settings.) 
+**You should download the dataset from our official website and accept the licence agreement, wherever you get the dataset and use it for your publication.**
 
 <!--**Download the dataset:**
 
