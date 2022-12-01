@@ -22,7 +22,7 @@ Dataset is updated.--!>
 
 Please check you web setting if you cannot access the official download link. (It should be okay since we have tested many VPN settings.)
 
-**You should download the dataset from our official download website and agree to the usage agreement, wherever you got the dataset and planned to use it for your publication.**
+You should download the dataset from our official download website and agree to the usage agreement, wherever you got the dataset and planned to use it for your publication.
 
 <!--**Download the dataset:**
 
