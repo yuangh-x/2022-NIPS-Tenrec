@@ -2,6 +2,8 @@ from torch import nn
 '''
 Reference:
     [1]Yong Kiam Tan et al. "Improved Recurrent Neural Networks for Session-based Recommendations." in DLRS 2016.
+Reference:
+    https://github.com/RUCAIBox/RecBole
 '''
 class GRU4Rec(nn.Module):
     r"""

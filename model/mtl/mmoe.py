@@ -2,6 +2,8 @@
 Reference:
     [1]Jiaqi Ma et al. Modeling task relationships in multi-task learning with multi-gate mixture-of-experts. In Proceedings of the 24th ACM SIGKDD
     International Conference on Knowledge Discovery & Data Mining, pages 1930–1939, 2018.
+Reference:
+    https://github.com/busesese/MultiTaskModel
 '''
 import torch
 import torch.nn as nn

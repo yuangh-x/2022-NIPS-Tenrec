@@ -2,6 +2,8 @@
 '''
 Reference:
     [1]Fajie Yuan et al., "A Simple Convolutional Generative Network for Next Item Recommendation" in WSDM 2019.
+Reference:
+    https://github.com/RUCAIBox/RecBole
 '''
 import numpy as np
 import torch
@@ -105,52 +107,7 @@ class NextItNet(nn.Module):
         # neg_logit = (dilate_outputs * neg_emb).mean(dim=-1)
 
         return seq_output  # pos_logit, neg_logit
-    # def reg_loss_rb(self):
-    #     r"""
-    #     L2 loss on residual blocks
-    #     """
-    #     loss_rb = 0
-    #     if self.reg_weight > 0.0:
-    #         for name, parm in self.residual_blocks.named_parameters():
-    #             if name.endswith('weight'):
-    #                 loss_rb += torch.norm(parm, 2)
-    #     return self.reg_weight * loss_rb
 
-    # def calculate_loss(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     # item_seq_len = interaction[self.ITEM_SEQ_LEN]
-    #     seq_output = self.forward(item_seq)
-    #     pos_items = interaction[self.POS_ITEM_ID]
-    #     if self.loss_type == 'BPR':
-    #         neg_items = interaction[self.NEG_ITEM_ID]
-    #         pos_items_emb = self.item_embedding(pos_items)
-    #         neg_items_emb = self.item_embedding(neg_items)
-    #         pos_score = torch.sum(seq_output * pos_items_emb, dim=-1)  # [B]
-    #         neg_score = torch.sum(seq_output * neg_items_emb, dim=-1)  # [B]
-    #         loss = self.loss_fct(pos_score, neg_score)
-    #     else:  # self.loss_type = 'CE'
-    #         test_item_emb = self.item_embedding.weight
-    #         logits = torch.matmul(seq_output, test_item_emb.transpose(0, 1))
-    #         loss = self.loss_fct(logits, pos_items)
-    #     reg_loss = self.reg_loss([self.item_embedding.weight, self.final_layer.weight])
-    #     loss = loss + self.reg_weight * reg_loss + self.reg_loss_rb()
-    #     return loss
-
-    # def predict(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     test_item = interaction[self.ITEM_ID]
-    #     seq_output = self.forward(item_seq)
-    #     test_item_emb = self.item_embedding(test_item)
-    #     scores = torch.mul(seq_output, test_item_emb).sum(dim=1)
-    #     return scores
-    #
-    # def full_sort_predict(self, interaction):
-    #     item_seq = interaction[self.ITEM_SEQ]
-    #     # item_seq_len = interaction[self.ITEM_SEQ_LEN]
-    #     seq_output = self.forward(item_seq)
-    #     test_items_emb = self.item_embedding.weight
-    #     scores = torch.matmul(seq_output, test_items_emb.transpose(0, 1))  # [B, item_num]
-    #     return scores
 
 class ResidualBlock_a(nn.Module):
     r"""

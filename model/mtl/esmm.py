@@ -2,6 +2,8 @@
 Reference:
     [1]Xiao Ma et al. Entire space multi-task model: An effective approach for estimating post-click conversion rate. In The 41st International
     ACM SIGIR Conference on Research & Development in Information Retrieval, pages 1137–1140, 2018.
+Reference:
+    https://github.com/busesese/MultiTaskModel
 '''
 import torch
 import torch.nn as nn
