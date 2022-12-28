@@ -13,25 +13,17 @@ QB-artilce.csv: User article action in QB.
 
 **Download the dataset:**
 
-See our openreview link (our formal website for this dataset is being constructing): 
-[https://openreview.net/forumid=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions)](https://openreview.net/forum?id=PfuW84q25y9&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DNeurIPS.cc%2F2022%2FTrack%2FDatasets_and_Benchmarks%2FAuthors%23your-submissions))
+Dataset link: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.html
 
-<!--**Download the dataset:**
+Please check your web setting if you cannot access the official download link. (It should be fine since we have tested many VPN settings.) 
+**You should download the dataset from our official website and accept the licence agreement, wherever you get the dataset and use it for your publication.**
 
-The raw dataset can be downloaded from:
-https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing
-
-The datasets of each task can be downloaded from:
-https://drive.google.com/file/d/1ss7QYHvQtfzOF1E31VrWR-_XkNHz-Jfd/view?usp=sharing
-
-**Download the dataset:**
-
-The Dataset can be downloaded from:
-https://drive.google.com/file/d/1R1JhdT9CHzT3qBJODz09pVpHMzShcQ7a/view?usp=sharing-->
 
 ### Benchmark
 
 We apply Tenrec on 10 recommendation tasks. **There are more tasks (e.g., Top-N recommendation), settings and results (including original large datasets) present in our paper appendix (see openreview).** Please run the commands as below to test the performance of each task.
+
+If you use Tenrec (with our training, validation and testing set) and have new SOTA results, we are happy to update them on the leaderboard. In this case, you should provide (1) your algorithm code; (2) all your hyper-parameters;  (3) a readme file tells other researchers how to use your code. We will append them on the leaderboard website, and make sure your models are evaluated with a fair comparison or common practice. E.g., if you compare the network architecture, you should ensure that you loss functions and sampling are the same with the baseline. We are also happy to create new leaderboard if you use Tenrec to perform new tasks, just email us.
 
 #### CTR (including shared embedding and separate embedding, see paper appendix):
 
@@ -357,6 +349,10 @@ Tensorflow 2.3.0
 sklearn 0.24.2
 
 python 3.6.8
+
+We refer to deppCTR and Recbole for some model implementation in the CTR and SBR tasks. 
+
+Recbole: https://recbole.io, DeepCTR: https://github.com/shenweichen/DeepCTR.
 
 **License:**
 
