@@ -1,3 +1,7 @@
+'''
+Reference:
+    Yang Sun et al. A generic network compression framework for sequential recommender systems. In SIGIR, 2020.
+'''
 import numpy as np
 from torch import nn
 from torch.nn import functional as F

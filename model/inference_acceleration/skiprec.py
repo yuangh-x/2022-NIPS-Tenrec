@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+'''
+Reference:
+    [1]Lei Chen et al. A user-adaptive layer selection framework for very deep sequential recommender models. In Proceedings of the AAAI Conference on
+    Artificial Intelligence, volume 35, pages 3984–3991, 2021.
+'''
 import numpy as np
 import torch
 import time

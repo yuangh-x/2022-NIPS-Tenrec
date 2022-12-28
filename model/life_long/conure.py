@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Reference:
+    [1]Fajie Yuan et al. One person, one model, one world: Learning continual user representation without forgetting. SIGIR, 2021.
+'''
 import numpy as np
 import torch
 from torch import nn

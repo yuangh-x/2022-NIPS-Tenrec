@@ -1,3 +1,7 @@
+'''
+Reference:
+    [1]Wang-Cheng Kang et al. "Self-Attentive Sequential Recommendation." in ICDM 2018.
+'''
 import torch.nn as nn
 import torch.nn.functional as F
 import torch

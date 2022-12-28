@@ -1,3 +1,7 @@
+'''
+Reference:
+    [1]Fajie Yuan et al. Parameter-efficient transfer from sequential behaviors for user modeling and recommendation. In SIGIR, pages 1469–1478, 2020.
+'''
 import numpy as np
 from torch import nn
 from torch.nn import functional as F

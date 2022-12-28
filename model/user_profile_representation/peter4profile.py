@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Reference:
+    [1]Fajie Yuan et al. Parameter-efficient transfer from sequential behaviors for user modeling and recommendation. In SIGIR, pages 1469–1478, 2020.
+'''
 import numpy as np
 import torch
 from torch import nn

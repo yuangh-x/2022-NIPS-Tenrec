@@ -1,3 +1,10 @@
+'''
+Reference:
+    [1]Fei Sun et al. "BERT4Rec: Sequential Recommendation with Bidirectional Encoder Representations from Transformer."
+    In CIKM 2019.
+Reference:
+    https://github.com/jaywonchung/BERT4Rec-VAE-Pytorch
+'''
 import torch.nn as nn
 import torch.nn.functional as F
 import torch

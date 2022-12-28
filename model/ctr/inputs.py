@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+"""
+Author:
+    Weichen Shen,weichenswc@163.com
+"""
 from collections import OrderedDict, namedtuple, defaultdict
 from itertools import chain
 

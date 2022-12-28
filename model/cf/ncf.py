@@ -1,3 +1,7 @@
+'''
+Reference:
+	[1]Xiangnan He et al. Neural collaborative filtering. In Proceedings of the 26th international conference on world wide web, pages 173–182, 2017.
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

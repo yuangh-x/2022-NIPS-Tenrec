@@ -1,3 +1,10 @@
+"""
+
+Author:
+    Weichen Shen,weichenswc@163.com
+
+"""
+
 from __future__ import print_function
 
 import time

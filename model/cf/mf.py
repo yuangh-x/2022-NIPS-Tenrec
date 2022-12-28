@@ -1,3 +1,8 @@
+'''
+Reference:
+    [1]Yehuda Koren, Robert Bell, and Chris Volinsky. Matrix factorization techniques for recommender systems.
+    Computer, 42(8):30–37, 2009.
+'''
 import torch
 import torch.nn as nn
 import numpy as np

@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Reference:
+    [1]Fajie Yuan et al., "A Simple Convolutional Generative Network for Next Item Recommendation" in WSDM 2019.
+'''
 import numpy as np
 import torch
 import time

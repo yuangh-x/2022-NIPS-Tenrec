@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Reference:
+    [1]Jiachun Wang et al. Stackrec: Efficient training of very deep sequential recommender models by iterative stacking. SIGIR, 2021.
+'''
 import numpy as np
 import torch
 from torch import nn
