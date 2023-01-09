@@ -1,4 +1,7 @@
-
+'''
+Reference:
+    https://github.com/recsys-benchmark/DaisyRec-v2.0
+'''
 import torch.nn as nn
 import torch.optim as optim
 from metrics import *

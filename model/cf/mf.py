@@ -2,6 +2,8 @@
 Reference:
     [1]Yehuda Koren, Robert Bell, and Chris Volinsky. Matrix factorization techniques for recommender systems.
     Computer, 42(8):30–37, 2009.
+Reference:
+    https://github.com/recsys-benchmark/DaisyRec-v2.0
 '''
 import torch
 import torch.nn as nn

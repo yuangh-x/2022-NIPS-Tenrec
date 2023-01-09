@@ -2,6 +2,8 @@
 Reference:
     [1]Xiangnan He et al. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the 43rd International
     ACM SIGIR conference on research and development in Information Retrieval, pages 639–648, 2020.
+Reference:
+    https://github.com/recsys-benchmark/DaisyRec-v2.0
 '''
 import torch
 import torch.nn as nn

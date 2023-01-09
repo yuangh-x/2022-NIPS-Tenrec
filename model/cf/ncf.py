@@ -1,6 +1,8 @@
 '''
 Reference:
 	[1]Xiangnan He et al. Neural collaborative filtering. In Proceedings of the 26th international conference on world wide web, pages 173–182, 2017.
+Reference:
+    https://github.com/recsys-benchmark/DaisyRec-v2.0
 '''
 import torch
 import torch.nn as nn

@@ -2,6 +2,8 @@
 Reference:
     [1]Xiang Wang et al. Neural graph collaborative filtering. In Proceedings of the 42nd international ACM SIGIR conference on Research and development
     in Information Retrieval, pages 165–174, 2019.
+Reference:
+    https://github.com/recsys-benchmark/DaisyRec-v2.0
 '''
 import torch
 import torch.nn as nn
