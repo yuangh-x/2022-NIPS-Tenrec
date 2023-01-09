@@ -350,9 +350,9 @@ sklearn 0.24.2
 
 python 3.6.8
 
-We refer to deppCTR and Recbole for some model implementation in the CTR and SBR tasks. 
+We refer to deppCTR, Recbole and DaisyRec for some model implementation in the CTR, SBR and Top-N tasks. 
 
-Recbole: https://recbole.io, DeepCTR: https://github.com/shenweichen/DeepCTR.
+Recbole: https://recbole.io, DeepCTR: https://github.com/shenweichen/DeepCTR, DaisyRec: https://github.com/recsys-benchmark/DaisyRec-v2.0.
 
 **License:**
 
