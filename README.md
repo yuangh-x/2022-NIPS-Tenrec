@@ -27,7 +27,8 @@ If you use Tenrec (with our training, validation and testing set) and have new S
 
 <!-- **Leaderboard link:** https://tenrec0.github.io/ -->
 ```diff
-- Leaderboard link: <https://tenrec0.github.io/>
+- Leaderboard link: 
+<https://tenrec0.github.io/>
 ```
 
 #### CTR (including shared embedding and separate embedding, see paper appendix):
