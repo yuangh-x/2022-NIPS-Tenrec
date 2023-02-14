@@ -13,14 +13,12 @@ QB-artilce.csv: User article action in QB.
 
 **Download the dataset:**
 
-Dataset link: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.html
+**Dataset link**: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.html
+
+**Leaderboard link:** https://tenrec0.github.io/
 
 Please check your web setting if you cannot access the official download link. (It should be fine since we have tested many VPN settings.) 
 **You should download the dataset from our official website and accept the licence agreement, wherever you get the dataset and use it for your publication.**
-
-### Leaderboard
-
-**Leaderboard link:** https://tenrec0.github.io/
 
 ### Benchmark
 
