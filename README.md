@@ -18,16 +18,15 @@ Dataset link: https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.ht
 Please check your web setting if you cannot access the official download link. (It should be fine since we have tested many VPN settings.) 
 **You should download the dataset from our official website and accept the licence agreement, wherever you get the dataset and use it for your publication.**
 
+### Leaderboard
+
+**Leaderboard link:** https://tenrec0.github.io/
 
 ### Benchmark
 
 We apply Tenrec on 10 recommendation tasks. **There are more tasks (e.g., Top-N recommendation), settings and results (including original large datasets) present in our paper appendix (see openreview).** Please run the commands as below to test the performance of each task.
 
 If you use Tenrec (with our training, validation and testing set) and have new SOTA results, we are happy to update them on the leaderboard. In this case, you should provide (1) your algorithm code; (2) all your hyper-parameters;  (3) a readme file tells other researchers how to use your code. We will append them on the leaderboard website, and make sure your models are evaluated with a fair comparison or common practice. E.g., if you compare the network architecture, you should ensure that you loss functions and sampling are the same with the baseline. We are also happy to create new leaderboard if you use Tenrec to perform new tasks, just email us.
-
-### Leaderboard
-
-**Leaderboard link:** https://tenrec0.github.io/
 
 #### CTR (including shared embedding and separate embedding, see paper appendix):
 
