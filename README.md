@@ -25,7 +25,7 @@ We apply Tenrec on 10 recommendation tasks. **There are more tasks (e.g., Top-N 
 
 If you use Tenrec (with our training, validation and testing set) and have new SOTA results, we are happy to update them on the leaderboard. In this case, you should provide (1) your algorithm code; (2) all your hyper-parameters;  (3) a readme file tells other researchers how to use your code. We will append them on the leaderboard website, and make sure your models are evaluated with a fair comparison or common practice. E.g., if you compare the network architecture, you should ensure that you loss functions and sampling are the same with the baseline. We are also happy to create new leaderboard if you use Tenrec to perform new tasks, just email us.
 
-- ![#f03c15](https://placehold.it/15/f03c15/000000?text=Leaderboard link: https://tenrec0.github.io/) `#f03c15`
+- ![#f03c15](https://placehold.it/15/f03c15/000000?text='Leaderboard link: https://tenrec0.github.io/') `#f03c15`
 
 #### CTR (including shared embedding and separate embedding, see paper appendix):
 
