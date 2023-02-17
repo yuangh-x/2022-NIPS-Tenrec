@@ -1,5 +1,5 @@
 # Tenrec: A Large-scale Multipurpose Benchmark Dataset for Recommender Systems
-Tenrec is a large-scale multipurpose benchmark dataset for recommender systems where data was collected from two feeds (articles and videos) recommendation platforms of Tencent.
+Tenrec is a large-scale multipurpose benchmark dataset for recommender systems where data was collected from two feeds (articles and videos) recommendation platforms.
 
 ### Dataset in Tenrec:
 
