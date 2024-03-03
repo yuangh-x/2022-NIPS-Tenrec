@@ -499,7 +499,7 @@ def Sequence_full_Validate(epoch, model, dataloader, writer, args, test=False):
                 scores = model.predict(seqs)
             else:
                 scores = model(seqs)
-            scores = scores.mean(1)
+            scores = scores[:, -1, :]
             metrics = recalls_and_ndcgs_for_ks(scores, labels, args.metric_ks, args)
             i += 1
             for key, value in metrics.items():
