@@ -197,7 +197,7 @@ class BERT(nn.Module):
 
     def forward(self, x):
         mask = (x > 0).unsqueeze(1).repeat(1, x.size(1), 1).unsqueeze(1)
-
+        mask = torch.tril(mask.expand((-1, -1, x.size(-1), -1)))
         # embedding the indexed sequence to sequence of vectors
         x = self.embedding(x)
 
