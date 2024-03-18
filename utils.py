@@ -484,7 +484,7 @@ def transferdataset(args):
     return filter_df, user_history, user_count, item_count
 
 def sequencedataset(item_min, args, path=None):
-    if '2' in path:
+    if '2_new' in path:
         df = pd.read_csv(path, usecols=['user_id', 'item_id', 'like'])
         df = df[df.like.isin([1])]
     else:
