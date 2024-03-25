@@ -87,7 +87,11 @@ def get_data(args):
         else:
             train_dataset = BuildTrainDataset(train_data, args.max_len, args.bert_mask_prob, args.pad_token, args.num_items, rng)
         valid_dataset = Build_full_EvalDataset(train_data_s, val_data_s, args.max_len, args.pad_token, args.num_items)
-        test_dataset = Build_full_EvalDataset(train_data, test_data, args.max_len, args.pad_token, args.num_items)
+        seq_data = {}
+        for key, value in train_data.items():
+            tmp = train_data[key] + val_data[key]
+            seq_data[key] = tmp
+        test_dataset = Build_full_EvalDataset(seq_data, test_data, args.max_len, args.pad_token, args.num_items)
         train_dataloader = get_train_loader(train_dataset, args)
         valid_dataloader = get_val_loader(valid_dataset, args)
         if name == 'inference_acc':
