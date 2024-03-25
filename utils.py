@@ -1155,7 +1155,7 @@ class Build_full_EvalDataset(data_utils.Dataset):
 
     def __getitem__(self, index):
         user = self.users[index]
-        seq = self.u2seq[user][:-1]
+        seq = self.u2seq[user]
         answer = self.u2answer[user]
         answer = answer[-1:][0]
 
