@@ -71,19 +71,19 @@ python main.py --task_name=ctr --seed=100 --model_name=dien --dataset_path='data
 
 NextItNet
 ```
-python main.py --task_name=sequence --seed=100 --model_name=nextitnet --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
+python main.py --task_name=sequence --seed=99 --model_name=nextitnet --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
 ```
 BERT4Rec
 ```
-python main.py --task_name=sequence --seed=100 --model_name=bert4rec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=16 --embedding_size=128 --num_heads=4 --bert_mask_prob=0.3 --is_pretrain=1
+python main.py --task_name=sequence --seed=99 --model_name=bert4rec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=16 --embedding_size=128 --num_heads=4 --bert_mask_prob=0.3 --is_pretrain=1
 ```
 SASRec
 ```
-python main.py --task_name=sequence --seed=100 --model_name=sasrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=1
+python main.py --task_name=sequence --seed=99 --model_name=sasrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=1
 ```
 GRU4Rec
 ```
-python main.py --task_name=sequence --seed=100 --model_name=gru4rec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=64 --block_num=8 --embedding_size=64 --is_pretrain=1
+python main.py --task_name=sequence --seed=99 --model_name=gru4rec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=64 --block_num=8 --embedding_size=64 --is_pretrain=1
 ```
 
 #### Multi-Task Learing
@@ -114,12 +114,12 @@ Plese run the command of Session-based Recommendation Task firstly.
 
 NextItNet with Pretrain
 ```
-python main.py --task_name=transfer_learning --seed=100 --model_name=peterrec --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=128 --block_num=16 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=0
+python main.py --task_name=transfer_learning --seed=99 --model_name=peterrec --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_nextitnet_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0005 --hidden_size=128 --block_num=16 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=0
 ```
 
 SASRec with Pretrain
 ```
-python main.py --task_name=transfer_learning --seed=100 --model_name=sas4transfer --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_sasrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=0
+python main.py --task_name=transfer_learning --seed=99 --model_name=sas4transfer --dataset_path='data/QB-video.csv' --pretrain_path='checkpoint/sequence_sasrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block8_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=0
 ```
 
 #### User Profile Prediction
@@ -253,42 +253,42 @@ python main.py --task_name=cold_start --seed=10 --model_name=peter4coldstart --p
 
 SAS4Rec
 ```
-python main.py --task_name=life_long --seed=100  --task_num=4 --model_name=sas4life --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --re_epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4
+python main.py --task_name=life_long --seed=99  --task_num=4 --model_name=sas4life --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --re_epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4
 ```
 
 Conure
 ```
-python main.py --task_name=life_long --seed=100 --task_num=4 --model_name=conure --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --re_epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3
+python main.py --task_name=life_long --seed=99 --task_num=4 --model_name=conure --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --re_epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3
 ```
 
 #### Model Compression
 
 SASRec
 ```
-python main.py --task_name=model_compr --seed=100 --model_name=sas4cp --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=1
+python main.py --task_name=model_compr --seed=99 --model_name=sas4cp --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=8 --embedding_size=64 --num_heads=4 --is_pretrain=1
 ```
 Cprec
 ```
-python main.py --task_name=model_compr --seed=100 --model_name=cprec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
+python main.py --task_name=model_compr --seed=99 --model_name=cprec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=8 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
 ```
 
 #### Model Training Speedup
 
 SASRec-shallow train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain=1
+python main.py --task_name=model_acc --seed=99 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain=1
 ```
 SASRec-deep train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_sas4rec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain=0 --add_num_times=2 
+python main.py --task_name=model_acc --seed=99 --model_name=sas4acc --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_sas4rec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd64_emb64.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=64 --block_num=4 --embedding_size=64 --num_heads=4 --is_pretrain=0 --add_num_times=2 
 ```
 Stackrec-shallow train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_stackrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
+python main.py --task_name=model_acc --seed=99 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --pretrain_path='checkpoint/model_acc_stackrec_seed100_is_pretrain_1_best_model_lr0.0001_wd0.0_block4_hd128_emb128.pth' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=1
 ```
 Stackrec-deep train
 ```
-python main.py --task_name=model_acc --seed=100 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=0 --add_num_times=2 
+python main.py --task_name=model_acc --seed=99 --model_name=stackrec --dataset_path='data/sbr_data_1M.csv' --train_batch_size=32 --val_batch_size=32 --test_batch_size=32 --epochs=20 --lr=0.0001 --hidden_size=128 --block_num=4 --embedding_size=128 --dilation=[1, 4] --kernel_size=3 --is_pretrain=0 --add_num_times=2 
 ```
 
 #### Model Inference Speedup
