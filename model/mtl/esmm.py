@@ -93,5 +93,5 @@ class ESMM(nn.Module):
             for mod in getattr(self, 'task_{}_dnn'.format(i + 1)):
                 x = mod(x)
             task_outputs.append(x)
-
+        task_outputs[1] = task_outputs[0] * task_outputs[1]
         return task_outputs
